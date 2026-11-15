@@ -4,7 +4,7 @@ Une application web personnelle pour organiser ses journées : agenda sur 7 jour
 
 Elle fonctionne sans compte, sans serveur et sans abonnement. Les données restent dans le navigateur de l'appareil.
 
-**Démo :** `https://VOTRE-PSEUDO.github.io/closer/`
+**Démo :** `https://maxencegayet.github.io/closer/`
 
 ## Pourquoi ce projet
 
