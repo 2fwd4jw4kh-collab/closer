@@ -210,13 +210,24 @@ label.tick input{width:20px;height:20px;accent-color:var(--ink);flex:none}
   .sheet-open .sheet{opacity:1;transition:opacity 150ms ease,visibility 0s}
   .btn:active,.chip:active,.check:active,.x:active,.day:active,.fab:active,nav.tabs a:active,.toast button:active{transform:none}
 }
+
+/* compte, synchro et mises à jour */
+.sheet input[type=email],.sheet input[type=password]{width:100%;background:var(--surface);border:0;border-radius:16px;padding:12px 16px;min-height:50px}
+.pwrow{position:relative}.pwrow input{padding-right:76px!important}.pwrow .eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:transparent;border:0;color:var(--muted);font-weight:600;font-size:14px;padding:8px 10px;min-height:40px}
+.acdot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-left:7px;vertical-align:2px;background:var(--hero-soft)}
+.acdot.ok{background:var(--credit)}.acdot.err{background:var(--late)}
+.acbox{background:var(--surface);border-radius:16px;padding:14px 16px;font-size:14px;line-height:1.45}
+.acbox b{font-weight:700}
+.rules span{white-space:nowrap}.rules .on{color:var(--credit);font-weight:600}
+.upd{position:fixed;left:50%;transform:translateX(-50%);top:calc(10px + env(safe-area-inset-top,0px));z-index:8;background:var(--ink);color:var(--surface);border:0;border-radius:999px;padding:11px 18px;font-weight:700;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.18);white-space:nowrap}
+.upd[hidden]{display:none}
 </style>
 </head>
 <body>
 <div class="app" id="app">
   <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
     <div class="brand">Closer</div>
-    <button type="button" class="btn ghost small" data-act="backup">Sauvegarde</button>
+    <div style="display:flex;gap:8px"><button type="button" class="btn ghost small" data-act="ac-open" id="ac-btn" hidden>Compte<i class="acdot" id="ac-dot"></i></button><button type="button" class="btn ghost small" data-act="backup">Sauvegarde</button></div>
   </div>
   <div class="note" id="note" hidden></div>
 
@@ -261,6 +272,7 @@ label.tick input{width:20px;height:20px;accent-color:var(--ink);flex:none}
   <a href="#brouillon" data-tab="brouillon">Brouillon</a>
 </nav>
 
+<button type="button" class="upd" id="upd" hidden>Nouvelle version · Mettre à jour</button>
 <div class="scrim" data-act="close-sheet"></div>
 <form class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sh-h" tabindex="-1" autocomplete="off"></form>
 
@@ -312,6 +324,7 @@ function newId(){
 function persistLocal(){
   if(state.mode!=="local")return;
   try{localStorage.setItem(LS_KEY,JSON.stringify(Array.from(state.items.entries())));}catch(e){}
+  schedSync(1500);
 }
 function writeFailed(e){
   var code=e&&e.code;
@@ -324,7 +337,7 @@ function put(id,data){
   state.items.set(id,data);
   if(col){chains[id]=(chains[id]||Promise.resolve()).then(function(){return col.doc(id).set(data);}).catch(writeFailed);}
 }
-function save(id,data){put(id,data);persistLocal();render();}
+function save(id,data){var isNew=!state.items.has(id);put(id,data);persistLocal();render();if(isNew&&data&&data.kind&&data.kind!=="prefs")stat1("first_item");}
 function remove(id){
   clearTimeout(noteTimers[id]);delete dirty[id];
   state.items.delete(id);persistLocal();render();
@@ -668,6 +681,7 @@ function sChip(act,val,label,on){return '<button type="button" class="chip" aria
 function renderSheet(){
   if(!sheet)return;
   var k=sheet.kind, dr=sheet.draft, isNew=sheet.mode==="new", h="";
+  if(k==="account"){$("sheet").innerHTML=acHTML();return;}
   if(k==="backup"){
     var last="";try{last=localStorage.getItem("closer-last-export")||"";}catch(e){}
     h='<div class="sh-head"><button type="button" class="btn ghost small" data-act="close-sheet">Fermer</button><h2 id="sh-h">Sauvegarde</h2><span style="width:78px"></span></div>'+
@@ -737,6 +751,7 @@ function renderSheet(){
 }
 function saveSheet(){
   if(sheet.kind==="backup")return;
+  if(sheet.kind==="account"){acPrimary();return;}
   if(sheet.kind==="cats"){
     var ce=$("sh-catname"), cn=cleanCat(ce.value);
     if(!cn){ce.focus();return;}
@@ -811,6 +826,7 @@ document.addEventListener("click",function(ev){
 
   /* fiche */
   if(act==="close-sheet"){closeSheet();return;}
+  if(act&&act.slice(0,3)==="ac-"){acAct(act,b);return;}
   if(act==="add"){
     if(curView==="brouillon"){newNote();return;}
     dr=blankDraft();
@@ -885,7 +901,7 @@ document.addEventListener("click",function(ev){
   if(act==="undo"){if(lastDeleted){save(lastDeleted.id,lastDeleted.data);lastDeleted=null;}clearTimeout(toastTimer);$("toast").classList.remove("open");return;}
   if(!d)return;
   if(act==="weekly"){var ds=(d.dones||[]).slice(),wi=ds.indexOf(t);if(wi>=0)ds.splice(wi,1);else ds.push(t);d.dones=ds.slice(-80);save(id,d);}
-  else if(act==="task"){d.done=!d.done;d.doneOn=d.done?t:"";d.doneAt=d.done?Date.now():0;save(id,d);}
+  else if(act==="task"){if(!d.done)statDay("active");d.done=!d.done;d.doneOn=d.done?t:"";d.doneAt=d.done?Date.now():0;save(id,d);}
   else if(act==="daily"){
     if(d.lastDone===t){d.lastDone=d.prevDone||"";d.streak=d.prevStreak||0;}
     else{d.prevDone=d.lastDone||"";d.prevStreak=d.streak||0;d.streak=(d.lastDone===shift(t,-1)?(d.streak||0):0)+1;d.lastDone=t;}
@@ -950,7 +966,237 @@ function localMode(note){
   try{var raw=localStorage.getItem(LS_KEY);if(raw)state.items=new Map(JSON.parse(raw));}catch(e){}
   state.note=note||"";
   render();
+  acStart();
 }
+
+/* ---------- version, mises à jour ---------- */
+var APPV="2026-11-16.1";
+function chkUp(){
+  if(location.protocol!=="https:"&&!window.__CLOSER_TEST)return;
+  fetch(location.pathname+"?v="+Date.now(),{cache:"no-store"}).then(function(r){return r.text();}).then(function(t){
+    var m=t.match(/var APPV="([^"]+)"/);if(m&&m[1]!==APPV)$("upd").hidden=false;
+  }).catch(function(){});
+}
+$("upd").addEventListener("click",function(){
+  $("upd").textContent="Mise à jour…";
+  var go=function(){location.reload();};
+  Promise.resolve(syncTimer?syncNow():0).catch(function(){}).then(function(){
+    if(navigator.serviceWorker&&navigator.serviceWorker.getRegistration)return navigator.serviceWorker.getRegistration().then(function(rg){return rg&&rg.update();});
+  }).catch(function(){}).then(go,go);
+});
+setTimeout(chkUp,2500);
+document.addEventListener("visibilitychange",function(){if(!document.hidden)chkUp();});
+
+/* ---------- compte et synchronisation (Supabase, projet Closer) ---------- */
+var CFG=window.__CLOSER_CFG||{};
+var SB_URL=CFG.url||"", SB_KEY=CFG.key||"";
+var CONTACT=CFG.contact||"";
+var SB=null, SU=null, cst=0, sbTried=false, AS={step:"login",email:"",msg:""}, syncTimer=null, syncing=false, syncAgain=false, lastOk=0, acq=false, showPriv=false;
+var sbMod=window.__CLOSER_SB||function(){return import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");};
+var SK="closer-sync-v1", SY=(function(){try{return JSON.parse(localStorage.getItem(SK))||{};}catch(e){return {};}})();
+function sySave(){try{localStorage.setItem(SK,JSON.stringify(SY));}catch(e){}}
+function hsh(s){var x=5381;for(var i=0;i<s.length;i++)x=((x<<5)+x+s.charCodeAt(i))|0;return (x>>>0).toString(36)+"."+s.length.toString(36);}
+function hOf(d){return hsh(JSON.stringify(d));}
+function acOn(){return !!(SB_URL&&SB_KEY);}
+function acStart(){
+  if(!acOn()||sbTried||SB)return;
+  $("ac-btn").hidden=false;stat1Day("open");
+  sbMod().then(function(m){
+    SB=m.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:"closer-auth"}});
+    return SB.auth.getSession();
+  }).then(function(r){
+    SU=r&&r.data&&r.data.session?r.data.session.user:null;
+    SB.auth.onAuthStateChange(function(ev,s){
+      if(ev==="PASSWORD_RECOVERY"){AS={step:"newpw",email:"",msg:"Choisis ton nouveau mot de passe."};setTimeout(acOpen,0);}
+      var nu=s?s.user:null, ch=(nu&&nu.id)!==(SU&&SU.id);SU=nu;
+      if(ch&&SU)setTimeout(function(){syncNow();},0);
+      acRefresh();
+    });
+    if(SU)syncNow();
+  }).catch(function(){SB=null;}).then(function(){sbTried=true;acRefresh();});
+}
+function schedSync(ms){if(!SB||!SU||state.mode!=="local")return;clearTimeout(syncTimer);syncTimer=setTimeout(function(){syncTimer=null;syncNow();},ms);}
+function storeLocal(){try{localStorage.setItem(LS_KEY,JSON.stringify(Array.from(state.items.entries())));}catch(e){}}
+async function syncNow(){
+  if(!SB||!SU||state.mode!=="local")return;
+  if(syncing){syncAgain=true;return;}
+  syncing=true;cst=3;acRefresh();
+  try{
+    if(SY.uid!==SU.id)SY={uid:SU.id,last:0,h:{}};
+    if(!SY.h)SY.h={};
+    /* 1. récupérer ce qui a changé ailleurs */
+    var since=Math.max(0,(SY.last||0)-5000), from=0, changed=false, maxSeen=SY.last||0;
+    for(;;){
+      var r=await SB.from("closer_items").select("id,data,deleted,updated_at").gt("updated_at",since).order("updated_at",{ascending:true}).range(from,from+499);
+      if(r.error)throw r.error;
+      var rows=r.data||[];
+      rows.forEach(function(x){
+        var cur=state.items.get(x.id), ch=cur?hOf(cur):"x", known=SY.h[x.id];
+        var localEdit=known===undefined?!!cur:ch!==known, rh=x.deleted?"x":hOf(x.data);
+        if(!(localEdit&&rh!==ch)){
+          if(x.deleted){if(cur){state.items.delete(x.id);changed=true;}}
+          else if(rh!==ch){state.items.set(x.id,x.data);changed=true;}
+          SY.h[x.id]=rh;
+        }
+        if(x.updated_at>maxSeen)maxSeen=x.updated_at;
+      });
+      if(rows.length<500)break;from+=500;
+    }
+    SY.last=maxSeen;
+    if(changed){storeLocal();render();if(sheet&&sheet.kind!=="account")renderSheet();}
+    /* 2. envoyer ce qui a changé ici */
+    var up=[];
+    state.items.forEach(function(d,id){var hh=hOf(d);if(SY.h[id]!==hh)up.push({o:{user_id:SU.id,id:id,data:d,deleted:false},h:hh});});
+    Object.keys(SY.h).forEach(function(id){if(SY.h[id]!=="x"&&!state.items.has(id))up.push({o:{user_id:SU.id,id:id,data:null,deleted:true},h:"x"});});
+    for(var i=0;i<up.length;i+=200){
+      var part=up.slice(i,i+200);
+      var w=await SB.from("closer_items").upsert(part.map(function(u){return u.o;}));
+      if(w.error)throw w.error;
+      part.forEach(function(u){SY.h[u.o.id]=u.h;});
+    }
+    sySave();cst=1;lastOk=Date.now();
+  }catch(e){cst=2;}
+  syncing=false;acRefresh();
+  if(syncAgain){syncAgain=false;schedSync(300);}
+}
+document.addEventListener("visibilitychange",function(){if(document.hidden){if(syncTimer){clearTimeout(syncTimer);syncTimer=null;syncNow();}}else schedSync(0);});
+setInterval(function(){if(!document.hidden)schedSync(0);},60000);
+
+function pwRules(p){return [[p.length>=8,"8 caractères"],[/[a-z]/.test(p),"une minuscule"],[/[A-Z]/.test(p),"une majuscule"],[/[0-9]/.test(p),"un chiffre"]];}
+function pwOk(p){return pwRules(p).every(function(r){return r[0];});}
+function pwHint(p){return "Au moins : "+pwRules(p).map(function(r){return '<span class="'+(r[0]?"on":"")+'">'+(r[0]?"✓ ":"")+r[1]+"</span>";}).join(" · ");}
+var WEAK="Mot de passe trop faible : 8 caractères minimum, avec une minuscule, une majuscule et un chiffre.";
+function errMsg(e){
+  var m=String(e&&e.message||"").toLowerCase();
+  if((e&&e.status===429)||m.indexOf("rate limit")>=0||m.indexOf("seconds")>=0)return "Trop de demandes : réessaie dans quelques minutes.";
+  if(m.indexOf("invalid login")>=0)return "E-mail ou mot de passe incorrect.";
+  if(m.indexOf("not confirmed")>=0)return "Adresse pas encore confirmée : clique sur le lien reçu par e-mail (regarde aussi les spams), puis reconnecte-toi ici.";
+  if(m.indexOf("already registered")>=0||m.indexOf("already been registered")>=0)return "Un compte existe déjà avec cette adresse : connecte-toi.";
+  if(m.indexOf("password")>=0&&(m.indexOf("least")>=0||m.indexOf("short")>=0||m.indexOf("weak")>=0||m.indexOf("character")>=0))return WEAK;
+  if(m.indexOf("same")>=0&&m.indexOf("password")>=0)return "Choisis un mot de passe différent de l'ancien.";
+  if(m.indexOf("fetch")>=0||m.indexOf("network")>=0)return "Pas de connexion internet.";
+  return "Erreur : "+(e&&e.message||"inconnue");
+}
+function pwField(ac,ph,neu){
+  return '<div class="field"><label for="ac-pw">Mot de passe</label><div class="pwrow"><input type="password" id="ac-pw" autocomplete="'+ac+'" placeholder="'+ph+'"'+(neu?' data-neu="1"':'')+'><button type="button" class="eye" data-act="ac-eye">Voir</button></div></div>'+
+    (neu?'<div class="hint rules" id="ac-rules">'+pwHint("")+'</div>':"");
+}
+function emField(){return '<div class="field"><label for="ac-em">E-mail</label><input type="email" id="ac-em" inputmode="email" autocomplete="email" autocapitalize="none" value="'+esc(AS.email||"")+'" placeholder="ton@adresse.fr"></div>';}
+function hm(t){return new Date(t).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});}
+function acHTML(){
+  var h='<div class="sh-head"><button type="button" class="btn ghost small" data-act="close-sheet">Fermer</button><h2 id="sh-h">Compte</h2><span style="width:78px"></span></div>';
+  if(!SB){h+='<div class="acbox">'+(sbTried?"Compte indisponible pour le moment (pas de connexion internet ?). Tes données restent sur cet appareil.":"Chargement…")+'</div>';}
+  else if(SU&&AS.step==="newpw"){
+    h+='<div class="hint" style="margin-top:0">Choisis ton nouveau mot de passe.</div>'+pwField("new-password","Nouveau mot de passe",1)+
+      '<div class="stack"><button type="submit" class="btn">Enregistrer le mot de passe</button><button type="button" class="btn ghost" data-act="ac-back">Annuler</button></div>';
+  }else if(SU){
+    var st=cst===1?"✓ Synchronisé"+(lastOk?" à "+hm(lastOk):""):cst===3?"Synchronisation…":cst===2?"Synchronisation en échec : nouvel essai automatique.":"";
+    h+='<div class="acbox">Connecté : <b>'+esc(SU.email||"")+'</b><br><span style="color:var(--muted)">'+st+'</span></div>'+
+      '<div class="hint" style="margin-top:0">Tes éléments sont enregistrés sur ton compte et sur cet appareil. Connecte-toi sur un autre appareil pour les y retrouver.</div>'+
+      '<div class="stack"><button type="button" class="btn" data-act="ac-sync">Synchroniser maintenant</button><button type="button" class="btn ghost" data-act="ac-chpw">Changer de mot de passe</button><button type="button" class="btn ghost" data-act="ac-out">Se déconnecter</button></div>'+
+      '<div><button type="button" class="btn danger small" data-act="ac-del">'+(acq?"Confirmer : supprimer le compte et ses données en ligne":"Supprimer mon compte")+'</button></div>';
+  }else if(AS.step==="signup"){
+    h+='<div class="hint" style="margin-top:0">Crée ton compte : tu recevras un e-mail pour confirmer ton adresse.</div>'+emField()+pwField("new-password","8 caractères minimum",1)+
+      '<div class="stack"><button type="submit" class="btn">Créer mon compte</button><button type="button" class="btn ghost" data-act="ac-tologin">J\'ai déjà un compte</button></div>';
+  }else{
+    h+='<div class="hint" style="margin-top:0">Facultatif : connecte-toi pour retrouver tes éléments sur tous tes appareils. Sans compte, ils restent sur cet appareil.</div>'+emField()+pwField("current-password","Mot de passe")+
+      '<div class="stack"><button type="submit" class="btn">Se connecter</button><button type="button" class="btn ghost" data-act="ac-tosignup">Créer un compte</button><button type="button" class="btn ghost" data-act="ac-forgot">Mot de passe oublié ?</button></div>';
+  }
+  if(AS.msg)h+='<div class="acbox" role="status">'+esc(AS.msg)+'</div>';
+  if(AS.unconf&&!SU)h+='<div><button type="button" class="btn ghost small" data-act="ac-resend">Renvoyer l\'e-mail de confirmation</button></div>';
+  h+='<div class="field" style="margin-top:8px"><span class="lab">À propos</span></div><div class="stack">'+
+    (CONTACT?'<button type="button" class="btn ghost" data-act="ac-avis">Donner mon avis</button>':"")+
+    '<button type="button" class="btn ghost" data-act="ac-stats">Statistiques anonymes : '+(statsOff()?"désactivées":"activées")+'</button>'+
+    '<button type="button" class="btn ghost" data-act="ac-priv">'+(showPriv?"Masquer la confidentialité":"Confidentialité")+'</button></div>';
+  if(showPriv)h+='<div class="acbox"><b>Sans compte</b>, tout reste sur ton appareil.<br><br><b>Avec un compte</b>, sont stockés en ligne : ton adresse e-mail et tes éléments (tâches, devoirs, habitudes, objectifs, notes). Hébergement : Supabase (Europe).<br><br><b>Utilisation</b> : uniquement pour te connecter et synchroniser tes appareils. Pas de publicité, pas de revente.<br><br><b>Accès</b> : chaque compte ne peut lire que ses propres données.<br><br><b>Statistiques anonymes</b> : un identifiant tiré au hasard sur l\'appareil, sans lien avec ton compte ni ton contenu, et seulement 4 événements (ouverture du jour, premier élément, journée active, compte créé). Désactivables ci-dessus.<br><br><b>Suppression</b> : « Supprimer mon compte » efface immédiatement ton compte et tes données en ligne.'+(CONTACT?'<br><br><b>Contact</b> : '+esc(CONTACT):"")+'</div>';
+  h+='<div class="hint" style="text-align:center">Version '+APPV+'</div>';
+  return h;
+}
+function acRefresh(){
+  var dot=$("ac-dot");if(dot)dot.className="acdot"+(SU&&cst===1?" ok":SU&&cst===2?" err":"");
+  if(sheet&&sheet.kind==="account"){var a=document.activeElement;if(!(a&&(a.id==="ac-em"||a.id==="ac-pw")))renderSheet();}
+}
+function acOpen(b){if(sheet&&sheet.kind==="account"){renderSheet();return;}if(sheet)closeSheet();acq=false;openSheet({mode:"edit",kind:"account",draft:{}},b||$("ac-btn"));}
+function acVals(){var e=$("ac-em"),p=$("ac-pw");if(e)AS.email=e.value.trim();return {em:AS.email,pw:p?p.value:""};}
+function okEm(x){return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(x);}
+function redir(){return location.origin+location.pathname;}
+function busy(t){var b=$("sheet").querySelector('[type=submit]');if(b){b.disabled=true;b.textContent=t;}}
+async function acPrimary(){
+  if(!SB)return;
+  var v=acVals();AS.msg="";
+  try{
+    if(SU&&AS.step==="newpw"){
+      if(!pwOk(v.pw)){AS.msg=WEAK;return renderSheet();}
+      busy("Enregistrement…");var u=await SB.auth.updateUser({password:v.pw});
+      if(u.error)AS.msg=errMsg(u.error);else{AS={step:"login",email:"",msg:"Mot de passe modifié."};}
+    }else if(!SU&&AS.step==="signup"){
+      if(!okEm(v.em)){AS.msg="Adresse e-mail invalide.";return renderSheet();}
+      if(!pwOk(v.pw)){AS.msg=WEAK;return renderSheet();}
+      busy("Création…");var s=await SB.auth.signUp({email:v.em,password:v.pw,options:{emailRedirectTo:redir()}});
+      if(s.error)AS.msg=errMsg(s.error);
+      else if(s.data&&s.data.user&&s.data.user.identities&&!s.data.user.identities.length)AS={step:"login",email:v.em,msg:"Un compte existe déjà avec cette adresse : connecte-toi."};
+      else if(s.data&&s.data.session){AS={step:"login",email:"",msg:""};stat1("signup");}
+      else{AS={step:"login",email:v.em,msg:"Compte créé ! Clique sur le lien de confirmation reçu par e-mail (il arrive de « Closer », regarde aussi les spams), puis connecte-toi ici."};stat1("signup");}
+    }else if(!SU){
+      if(!okEm(v.em)){AS.msg="Adresse e-mail invalide.";return renderSheet();}
+      if(!v.pw){AS.msg="Entre ton mot de passe.";return renderSheet();}
+      busy("Connexion…");var l=await SB.auth.signInWithPassword({email:v.em,password:v.pw});
+      if(l.error){AS.msg=errMsg(l.error);AS.unconf=String(l.error.message||"").toLowerCase().indexOf("not confirmed")>=0;}
+      else AS={step:"login",email:"",msg:""};
+    }
+  }catch(e){AS.msg=errMsg(e);}
+  renderSheet();
+}
+async function acAct(act,b){
+  if(act==="ac-open"){acOpen(b);return;}
+  if(act==="ac-eye"){var i=$("ac-pw");if(i){i.type=i.type==="password"?"text":"password";b.textContent=i.type==="password"?"Voir":"Cacher";i.focus();}return;}
+  if(act==="ac-priv"){showPriv=!showPriv;acVals();renderSheet();return;}
+  if(act==="ac-stats"){try{if(statsOff())localStorage.removeItem("closer-stats-off");else localStorage.setItem("closer-stats-off","1");}catch(e){}acVals();renderSheet();return;}
+  if(act==="ac-avis"){location.href="mailto:"+CONTACT+"?subject="+encodeURIComponent("Mon avis sur Closer")+"&body="+encodeURIComponent("Ce qui me plaît :\n\nCe qui me gêne :\n\nCe que j'aimerais :\n\n— Version "+APPV);return;}
+  if(!SB)return;
+  acVals();AS.msg="";
+  if(act==="ac-tosignup"){AS.step="signup";AS.unconf=false;renderSheet();return;}
+  if(act==="ac-tologin"||act==="ac-back"){AS.step="login";renderSheet();return;}
+  if(act==="ac-chpw"){AS.step="newpw";renderSheet();return;}
+  if(act==="ac-sync"){syncNow();return;}
+  try{
+    if(act==="ac-forgot"){
+      if(!okEm(AS.email)){AS.msg="Entre d'abord ton adresse e-mail.";return renderSheet();}
+      var f=await SB.auth.resetPasswordForEmail(AS.email,{redirectTo:redir()});
+      AS.msg=f.error?errMsg(f.error):"Si un compte existe, un e-mail vient d'être envoyé. Ouvre le lien qu'il contient pour choisir un nouveau mot de passe.";
+    }else if(act==="ac-resend"){
+      var rs=await SB.auth.resend({type:"signup",email:AS.email,options:{emailRedirectTo:redir()}});
+      AS.msg=rs.error?errMsg(rs.error):"E-mail de confirmation renvoyé (regarde aussi les spams).";AS.unconf=!!rs.error;
+    }else if(act==="ac-out"){
+      if(syncTimer){clearTimeout(syncTimer);syncTimer=null;await syncNow();}
+      try{await SB.auth.signOut({scope:"local"});}catch(e){}
+      SU=null;cst=0;SY={};try{localStorage.removeItem(SK);}catch(e){}
+      AS={step:"login",email:"",msg:"Déconnecté : tes éléments restent sur cet appareil."};
+    }else if(act==="ac-del"){
+      if(!acq){acq=true;return renderSheet();}
+      acq=false;var d=await SB.rpc("delete_my_account");
+      if(d.error){AS.msg=errMsg(d.error);return renderSheet();}
+      try{await SB.auth.signOut({scope:"local"});}catch(e){}
+      SU=null;cst=0;SY={};try{localStorage.removeItem(SK);}catch(e){}
+      AS={step:"login",email:"",msg:"Compte supprimé. Tes éléments restent sur cet appareil."};
+    }
+  }catch(e){AS.msg=errMsg(e);}
+  renderSheet();acRefresh();
+}
+document.addEventListener("input",function(ev){var t=ev.target;if(t&&t.id==="ac-pw"&&t.dataset.neu){var r=$("ac-rules");if(r)r.innerHTML=pwHint(t.value);}});
+
+/* ---------- statistiques anonymes ---------- */
+function statsOff(){try{return localStorage.getItem("closer-stats-off")==="1";}catch(e){return true;}}
+function aid(){try{var a=localStorage.getItem("closer-aid");if(!a){a=(crypto.randomUUID?crypto.randomUUID():"10000000-1000-4000-8000-100000000000".replace(/[018]/g,function(c){return (c^Math.random()*16>>c/4).toString(16);}));localStorage.setItem("closer-aid",a);}return a;}catch(e){return null;}}
+function stat(ev){
+  if(!acOn()||statsOff()||window.__CLOSER_NOSTATS)return;
+  var a=aid();if(!a)return;
+  try{fetch(SB_URL+"/rest/v1/closer_events",{method:"POST",keepalive:true,headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY,"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify([{aid:a,ev:ev,d:today(),v:APPV}])}).catch(function(){});}catch(e){}
+}
+function stat1(ev){try{if(localStorage.getItem("closer-ev-"+ev))return;localStorage.setItem("closer-ev-"+ev,"1");}catch(e){return;}stat(ev);}
+function stat1Day(ev){var k="closer-ev-"+ev+"-day",t=today();try{if(localStorage.getItem(k)===t)return;localStorage.setItem(k,t);}catch(e){return;}stat(ev);}
+function statDay(ev){stat1Day(ev);}
+
 route();render();
 if(navigator.storage&&navigator.storage.persist){navigator.storage.persist().catch(function(){});}
 if("serviceWorker" in navigator&&location.protocol==="https:"){navigator.serviceWorker.register("sw.js").catch(function(){});}
