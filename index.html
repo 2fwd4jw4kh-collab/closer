@@ -40,7 +40,7 @@ button{cursor:pointer}
 
 .app{max-width:620px;margin:0 auto;padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(170px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:18px}
 .view{display:flex;flex-direction:column;gap:18px}
-.brand{font-weight:800;font-size:18px;letter-spacing:-.03em}
+.brand{font-weight:800;font-size:19px;letter-spacing:-.015em;font-synthesis:none;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}
 h1{margin:0;font-weight:800;font-size:28px;line-height:1.1;letter-spacing:-.03em}
 
 /* navigation flottante */
@@ -234,9 +234,18 @@ input,textarea,select{font-size:16px}
 .sheet::before{content:"";flex:none;align-self:center;width:38px;height:5px;border-radius:3px;background:#c4c7ce;margin:-6px 0 -8px}
 .sheet.dragging{transition:none!important}
 .sheet-open.sheet-drag .scrim{transition:none}
+
+/* caches : rien ne passe sous l'heure ni sous la barre d'onglets */
+.edge-top,.edge-bottom{position:fixed;left:0;right:0;z-index:4;pointer-events:none}
+.edge-top{top:0;height:calc(env(safe-area-inset-top,0px) + 10px);background:linear-gradient(to bottom,var(--bg) calc(100% - 10px),rgba(239,240,242,0))}
+.edge-bottom{bottom:0;height:calc(96px + env(safe-area-inset-bottom,0px));background:linear-gradient(to top,var(--bg) calc(100% - 26px),rgba(239,240,242,0))}
+/* 4. le bouton + s'efface quand on fait défiler vers le bas, revient vers le haut */
+.fab{transition:transform 220ms var(--ease-out),opacity 180ms ease}
+.fab.away{transform:translateY(calc(100% + 96px));opacity:0;pointer-events:none}
 </style>
 </head>
 <body>
+<div class="edge-top" aria-hidden="true"></div><div class="edge-bottom" aria-hidden="true"></div>
 <div class="app" id="app">
   <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
     <div class="brand">Closer</div>
@@ -983,7 +992,14 @@ function localMode(note){
 }
 
 /* ---------- version, mises à jour ---------- */
-var APPV="2026-11-16.4";
+var APPV="2026-11-17.1";
+/* 4. bouton + : se range au défilement vers le bas */
+(function(){var y=window.scrollY,f=document.getElementById("fab");
+  addEventListener("scroll",function(){var n=window.scrollY,d=n-y;
+    if(n<40||d<-6)f.classList.remove("away");else if(d>6)f.classList.add("away");
+    if(Math.abs(d)>6)y=n;},{passive:true});
+  addEventListener("hashchange",function(){f.classList.remove("away");});})();
+
 function chkUp(){
   if(location.protocol!=="https:"&&!window.__CLOSER_TEST)return;
   fetch(location.pathname+"?v="+Date.now(),{cache:"no-store"}).then(function(r){return r.text();}).then(function(t){
