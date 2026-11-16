@@ -89,7 +89,7 @@ with sync_playwright() as p:
                     r.continue_()
             c.route('**/index.html*', page_route)
         c.expose_function('__srv', srv)
-        c.add_init_script('window.__CLOSER_TEST=1;' + ('window.__CLOSER_CFG=' + json.dumps(CFG) + ';' if cfg else ''))
+        c.add_init_script('window.__CLOSER_TEST=1;window.__CLOSER_CFG=' + json.dumps(CFG if cfg else {'url': '', 'key': ''}) + ';')
         pg = c.new_page()
         errs = []
         pg.on('pageerror', lambda e: errs.append(str(e)))

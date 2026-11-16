@@ -970,7 +970,7 @@ function localMode(note){
 }
 
 /* ---------- version, mises à jour ---------- */
-var APPV="2026-11-16.1";
+var APPV="2026-11-16.2";
 function chkUp(){
   if(location.protocol!=="https:"&&!window.__CLOSER_TEST)return;
   fetch(location.pathname+"?v="+Date.now(),{cache:"no-store"}).then(function(r){return r.text();}).then(function(t){
@@ -989,7 +989,7 @@ document.addEventListener("visibilitychange",function(){if(!document.hidden)chkU
 
 /* ---------- compte et synchronisation (Supabase, projet Closer) ---------- */
 var CFG=window.__CLOSER_CFG||{};
-var SB_URL=CFG.url||"", SB_KEY=CFG.key||"";
+var SB_URL="url" in CFG?CFG.url:"https://jnhykrfvoqyjbajmcwny.supabase.co", SB_KEY="key" in CFG?CFG.key:"sb_publishable_pjIB1C6Uwowi8a7e94FXTA_YO85NySe";
 var CONTACT=CFG.contact||"";
 var SB=null, SU=null, cst=0, sbTried=false, AS={step:"login",email:"",msg:""}, syncTimer=null, syncing=false, syncAgain=false, lastOk=0, acq=false, showPriv=false;
 var sbMod=window.__CLOSER_SB||function(){return import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");};
