@@ -184,6 +184,27 @@ with sync_playwright() as p:
     check('compte supprimé, données en ligne effacées', not ROWS and 'Compte supprimé' in pa.inner_text('#sheet'))
     a.close(); bb.close()
 
+    # 7 bis. Geste iOS : glisser la fiche vers le bas la ferme ; un petit glissement lent la laisse ouverte
+    c, pg, errs = device(cfg=False)
+    cdp = c.new_cdp_session(pg)
+    def swipe(y_from, y_to, steps, pause):
+        cdp.send('Input.dispatchTouchEvent', {'type': 'touchStart', 'touchPoints': [{'x': 200, 'y': y_from}]})
+        for i in range(1, steps + 1):
+            pg.wait_for_timeout(pause)
+            cdp.send('Input.dispatchTouchEvent', {'type': 'touchMove', 'touchPoints': [{'x': 200, 'y': y_from + (y_to - y_from) * i / steps}]})
+        cdp.send('Input.dispatchTouchEvent', {'type': 'touchEnd', 'touchPoints': []})
+        pg.wait_for_timeout(450)
+    pg.click('[data-act="backup"]'); pg.wait_for_timeout(450)
+    top = pg.evaluate("document.getElementById('sheet').getBoundingClientRect().top")
+    swipe(top + 20, top + 60, 10, 40)
+    check('petit glissement lent : la fiche reste ouverte', pg.evaluate("document.body.classList.contains('sheet-open')"))
+    check('la fiche revient en place', pg.evaluate("getComputedStyle(document.getElementById('sheet')).transform") in ('none', 'matrix(1, 0, 0, 1, 0, 0)'))
+    swipe(top + 20, top + 140, 4, 16)
+    check('glissement rapide vers le bas : la fiche se ferme', not pg.evaluate("document.body.classList.contains('sheet-open')"))
+    check('pas de débordement horizontal sur iPhone', pg.evaluate("document.documentElement.scrollWidth<=window.innerWidth"))
+    check('aucune erreur pendant les gestes', not errs)
+    c.close()
+
     # 8. Bandeau de mise à jour quand une nouvelle version est en ligne
     c, pg, errs = device(appv_online='9999')
     pg.wait_for_timeout(3200)

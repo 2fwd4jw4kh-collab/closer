@@ -2,7 +2,9 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="color-scheme" content="light">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>Closer</title>
 <meta name="description" content="Closer : agenda, tâches, devoirs, habitudes et objectifs dans une seule page, sans compte ni serveur.">
 <meta name="theme-color" content="#eff0f2">
@@ -36,13 +38,13 @@ button{cursor:pointer}
 :focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 [hidden]{display:none!important}
 
-.app{max-width:620px;margin:0 auto;padding:16px 16px 170px;display:flex;flex-direction:column;gap:18px}
+.app{max-width:620px;margin:0 auto;padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(170px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:18px}
 .view{display:flex;flex-direction:column;gap:18px}
 .brand{font-weight:800;font-size:18px;letter-spacing:-.03em}
 h1{margin:0;font-weight:800;font-size:28px;line-height:1.1;letter-spacing:-.03em}
 
 /* navigation flottante */
-nav.tabs{position:fixed;left:12px;right:12px;bottom:14px;margin-inline:auto;max-width:460px;z-index:5;display:flex;gap:2px;background:var(--ink);border-radius:999px;padding:5px;overflow-x:auto;scrollbar-width:none}
+nav.tabs{position:fixed;left:12px;right:12px;bottom:calc(14px + env(safe-area-inset-bottom,0px));margin-inline:auto;max-width:460px;z-index:5;display:flex;gap:2px;background:var(--ink);border-radius:999px;padding:5px;overflow-x:auto;scrollbar-width:none}
 nav.tabs::-webkit-scrollbar{display:none}
 nav.tabs a{flex:1 0 auto;text-align:center;padding:12px 8px;border-radius:999px;text-decoration:none;color:var(--hero-soft);font-weight:600;font-size:14px;letter-spacing:-.01em;white-space:nowrap;transition:background-color 150ms ease,color 150ms ease,transform 160ms var(--ease-out)}
 nav.tabs a[aria-current="page"]{background:var(--surface);color:var(--ink)}
@@ -50,7 +52,7 @@ nav.tabs a:active{transform:scale(.97)}
 nav.tabs a:focus-visible{outline-color:var(--surface);outline-offset:-3px}
 @media (max-width:379px){nav.tabs a{font-size:13px;padding:12px 6px}}
 
-.fab{position:fixed;right:max(16px,calc(50% - 294px));bottom:82px;z-index:5;width:58px;height:58px;border-radius:50%;border:0;background:var(--ink);color:var(--surface);display:grid;place-items:center;box-shadow:0 6px 18px rgba(0,0,0,.22);transition:transform 160ms var(--ease-out)}
+.fab{position:fixed;right:max(16px,calc(50% - 294px));bottom:calc(82px + env(safe-area-inset-bottom,0px));z-index:5;width:58px;height:58px;border-radius:50%;border:0;background:var(--ink);color:var(--surface);display:grid;place-items:center;box-shadow:0 6px 18px rgba(0,0,0,.22);transition:transform 160ms var(--ease-out)}
 .fab:active{transform:scale(.94)}
 .fab svg{width:24px;height:24px;stroke:currentColor;stroke-width:2.6;fill:none;stroke-linecap:round}
 
@@ -168,7 +170,7 @@ form.addstep input{flex:1;min-width:0;min-height:40px;padding:8px 14px;font-size
 
 /* fiche d'ajout et de modification */
 .scrim{position:fixed;inset:0;z-index:10;background:rgba(0,0,0,.42);opacity:0;visibility:hidden;transition:opacity 220ms ease,visibility 0s 220ms}
-.sheet{position:fixed;left:0;right:0;bottom:0;z-index:11;margin-inline:auto;max-width:620px;height:min(92%,700px);background:var(--bg);border-radius:28px 28px 0 0;padding:14px 16px 28px;overflow-y:auto;display:flex;flex-direction:column;gap:16px;
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:11;margin-inline:auto;max-width:620px;height:min(92%,700px);height:min(92dvh,700px);background:var(--bg);border-radius:28px 28px 0 0;padding:14px 16px calc(28px + env(safe-area-inset-bottom,0px));overflow-y:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:16px;
   transform:translateY(100%);visibility:hidden;transition:transform 220ms var(--ease-out),visibility 0s 220ms}
 .sheet-open .scrim{opacity:1;visibility:visible;transition:opacity 320ms ease,visibility 0s}
 .sheet-open .sheet{transform:none;visibility:visible;transition:transform 340ms var(--ease-drawer),visibility 0s}
@@ -199,7 +201,7 @@ label.tick input{width:20px;height:20px;accent-color:var(--ink);flex:none}
 .stack{display:flex;flex-direction:column;gap:8px}
 .addcat input{flex:1;min-width:0}
 
-.toast{position:fixed;left:16px;right:16px;bottom:152px;margin-inline:auto;width:fit-content;max-width:calc(100% - 32px);z-index:6;background:var(--ink);color:var(--surface);border-radius:16px;padding:10px 10px 10px 18px;display:flex;align-items:center;gap:14px;font-size:14px;font-weight:500;
+.toast{position:fixed;left:16px;right:16px;bottom:calc(152px + env(safe-area-inset-bottom,0px));margin-inline:auto;width:fit-content;max-width:calc(100% - 32px);z-index:6;background:var(--ink);color:var(--surface);border-radius:16px;padding:10px 10px 10px 18px;display:flex;align-items:center;gap:14px;font-size:14px;font-weight:500;
   transform:translateY(calc(100% + 170px));opacity:0;visibility:hidden;transition:transform 200ms var(--ease-out),opacity 200ms var(--ease-out),visibility 0s 200ms}
 .toast.open{transform:none;opacity:1;visibility:visible;transition:transform 400ms ease,opacity 400ms ease,visibility 0s}
 .toast button{background:var(--surface);color:var(--ink);border:0;border-radius:999px;padding:7px 14px;font-weight:700;transition:transform 160ms var(--ease-out)}
@@ -221,6 +223,17 @@ label.tick input{width:20px;height:20px;accent-color:var(--ink);flex:none}
 .rules span{white-space:nowrap}.rules .on{color:var(--credit);font-weight:600}
 .upd{position:fixed;left:50%;transform:translateX(-50%);top:calc(10px + env(safe-area-inset-top,0px));z-index:8;background:var(--ink);color:var(--surface);border:0;border-radius:999px;padding:11px 18px;font-weight:700;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.18);white-space:nowrap}
 .upd[hidden]{display:none}
+
+/* ---- iPhone : comportement d'appli installée ---- */
+html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%;overscroll-behavior:none}
+body{overscroll-behavior:none}
+button,a,label,[role="button"],[role="checkbox"],input[type=date],select{touch-action:manipulation}
+button,[role="button"],[role="checkbox"],nav.tabs a,.chip,.fab,.brand{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+input,textarea,select{font-size:16px}
+.scrim{touch-action:none}
+.sheet::before{content:"";flex:none;align-self:center;width:38px;height:5px;border-radius:3px;background:#c4c7ce;margin:-6px 0 -8px}
+.sheet.dragging{transition:none!important}
+.sheet-open.sheet-drag .scrim{transition:none}
 </style>
 </head>
 <body>
@@ -970,7 +983,7 @@ function localMode(note){
 }
 
 /* ---------- version, mises à jour ---------- */
-var APPV="2026-11-16.3";
+var APPV="2026-11-16.4";
 function chkUp(){
   if(location.protocol!=="https:"&&!window.__CLOSER_TEST)return;
   fetch(location.pathname+"?v="+Date.now(),{cache:"no-store"}).then(function(r){return r.text();}).then(function(t){
@@ -1196,6 +1209,40 @@ function stat(ev){
 function stat1(ev){try{if(localStorage.getItem("closer-ev-"+ev))return;localStorage.setItem("closer-ev-"+ev,"1");}catch(e){return;}stat(ev);}
 function stat1Day(ev){var k="closer-ev-"+ev+"-day",t=today();try{if(localStorage.getItem(k)===t)return;localStorage.setItem(k,t);}catch(e){return;}stat(ev);}
 function statDay(ev){stat1Day(ev);}
+
+/* ---------- fiche : glisser vers le bas pour fermer, comme sur iOS ---------- */
+(function(){
+  var sh=$("sheet"), sc=document.querySelector(".scrim");
+  var ys=0, y0=0, t0=0, dy=0, drag=false, armed=false;
+  function noDrag(t){return !!(t&&t.closest&&t.closest("input,textarea,select,[contenteditable]"));}
+  function begin(y){drag=true;y0=y;t0=Date.now();dy=0;sh.classList.add("dragging");document.body.classList.add("sheet-drag");}
+  function move(y){
+    dy=y-y0;
+    var d=dy<0?-Math.pow(-dy,0.7):dy;                       /* frottement si on tire vers le haut */
+    sh.style.transform="translateY("+d+"px)";
+    sc.style.opacity=String(Math.max(0,1-Math.max(0,dy)/((sh.offsetHeight||600)*1.2)));
+  }
+  function end(){
+    if(!drag)return;drag=false;armed=false;
+    var dt=Math.max(1,Date.now()-t0), v=dy/dt;
+    sh.classList.remove("dragging");document.body.classList.remove("sheet-drag");sc.style.opacity="";
+    if(dy>0&&(dy>(sh.offsetHeight||600)*0.28||v>0.11)){closeSheet();}  /* un geste rapide suffit */
+    sh.style.transform="";
+  }
+  sh.addEventListener("touchstart",function(e){
+    if(!sheet||e.touches.length!==1||noDrag(e.target)){armed=false;return;}
+    armed=sh.scrollTop<=0;ys=e.touches[0].clientY;
+  },{passive:true});
+  sh.addEventListener("touchmove",function(e){
+    if(!sheet||!armed)return;
+    if(e.touches.length!==1){end();return;}               /* un deuxième doigt : on ne suit pas */
+    var y=e.touches[0].clientY;
+    if(!drag){ if(y-ys>6&&sh.scrollTop<=0){begin(y);} else if(ys-y>6){armed=false;return;} else return; }
+    e.preventDefault();move(y);
+  },{passive:false});
+  sh.addEventListener("touchend",end);
+  sh.addEventListener("touchcancel",end);
+})();
 
 route();render();
 if(navigator.storage&&navigator.storage.persist){navigator.storage.persist().catch(function(){});}
