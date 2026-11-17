@@ -157,11 +157,48 @@ form.addstep input{flex:1;min-width:0;min-height:40px;padding:8px 14px;font-size
 .goal .btn.ghost{background:var(--bg)}
 
 /* brouillon */
-.note-card{background:var(--surface);border-radius:20px;padding:16px 10px 6px 18px;display:flex;flex-direction:column;gap:2px}
-.note-card:focus-within{box-shadow:0 0 0 2px var(--ink)}
-.note-ta{display:block;width:100%;border:0;background:transparent;resize:none;line-height:1.5;min-height:48px;padding:0 8px 0 0;overflow:hidden;outline:none}
-.note-ta::placeholder{color:var(--muted)}
-.note-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:13px;color:var(--muted);min-height:32px}
+/* Brouillon : liste façon Notes */
+.nb-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.nb-head .n{color:var(--muted);font-size:14px;font-weight:600}
+.search{display:flex;align-items:center;gap:8px;background:var(--surface);border-radius:14px;padding:0 14px;color:var(--muted)}
+.search:focus-within{box-shadow:0 0 0 2px var(--ink)}
+.search svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
+.search input{flex:1;min-width:0;border:0;background:transparent;outline:none;min-height:46px;color:var(--ink);-webkit-appearance:none;appearance:none}
+.search input::placeholder{color:var(--muted)}
+.nrow{display:flex;flex-direction:column;align-items:stretch;gap:3px;width:100%;min-width:0;text-align:left;background:none;border:0;border-top:1px solid var(--line);padding:13px 16px;transition:background-color 150ms ease}
+.list .nrow:first-child{border-top:0}
+.nrow:active{background:var(--bg)}
+.nrow .nt{display:flex;align-items:center;gap:6px;min-width:0;font-weight:700;font-size:16px;letter-spacing:-.01em}
+.nrow .nt>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nrow .np{font-size:14px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nrow .np b{font-weight:600;color:var(--ink);margin-right:8px}
+.nrow .nf{align-self:flex-start;font-size:12px;font-weight:600;color:var(--muted);background:var(--bg);border-radius:6px;padding:2px 7px;margin-top:2px}
+.pin{width:14px;height:14px;flex:none;fill:currentColor;stroke:currentColor;stroke-width:1.6;stroke-linejoin:round}
+/* Brouillon : éditeur façon Notion */
+body.editing #top,body.editing nav.tabs,body.editing .fab{display:none!important}
+.ne-top{position:sticky;top:env(safe-area-inset-top,0px);z-index:3;display:flex;align-items:center;gap:8px;margin:-8px -16px 0;padding:8px 16px;background:var(--bg)}
+.ne-top .back{display:flex;align-items:center;gap:2px;background:none;border:0;padding:10px 6px 10px 0;font-weight:700;font-size:16px}
+.ne-top .back svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.ne-top .sp{flex:1}
+.icon{width:42px;height:42px;border-radius:50%;border:0;background:var(--surface);color:var(--ink);display:grid;place-items:center;transition:background-color 150ms ease,color 150ms ease,transform 160ms var(--ease-out)}
+.icon:active{transform:scale(.94)}
+.icon svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.icon[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+.icon[aria-pressed="true"] svg{fill:currentColor}
+.ne{display:flex;flex-direction:column;gap:8px;padding-bottom:110px}
+.ne.enter{animation:neIn 220ms var(--ease-out)}
+@keyframes neIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
+.ne-folders{margin-bottom:6px}
+.ne-folders .chip{padding:6px 12px;font-size:13px}
+.ne-title{display:block;width:100%;border:0;background:transparent;resize:none;outline:none;padding:0;overflow:hidden;font-size:30px;font-weight:800;letter-spacing:-.03em;line-height:1.12}
+.ne-meta{font-size:13px;color:var(--muted);margin-bottom:8px}
+.ne-body{display:block;width:100%;border:0;background:transparent;resize:none;outline:none;padding:0;overflow:hidden;min-height:45vh;font-size:17px;line-height:1.55}
+.ne-title::placeholder,.ne-body::placeholder{color:#a3a7b0}
+.ne-tools{position:fixed;left:12px;right:12px;bottom:calc(14px + env(safe-area-inset-bottom,0px));margin-inline:auto;max-width:460px;z-index:5;display:flex;background:var(--ink);border-radius:999px;padding:5px;transition:transform 120ms ease}
+.ne-tools button{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:999px;background:transparent;color:var(--surface);font-weight:600;font-size:14px;padding:12px 10px;-webkit-user-select:none;user-select:none}
+.ne-tools button:active{background:#26282d}
+.ne-tools svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+@media (prefers-reduced-motion:reduce){.ne.enter{animation:none}}
 .x{flex:none;border:0;background:transparent;color:#787d88;width:32px;height:32px;border-radius:50%;font-size:18px;line-height:1;position:relative;transition:background-color 150ms ease,color 150ms ease,transform 160ms var(--ease-out)}
 .x::after{content:"";position:absolute;inset:-6px}
 .x:active{transform:scale(.92);background:var(--bg);color:var(--ink)}
@@ -259,7 +296,7 @@ input,textarea,select{font-size:16px}
 <body>
 <div class="edge-top" aria-hidden="true"></div><div class="edge-bottom" aria-hidden="true"></div>
 <div class="app" id="app">
-  <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+  <div id="top" style="display:flex;justify-content:space-between;align-items:center;gap:12px">
     <div class="brand">Closer</div>
     <button type="button" class="btn ghost small" data-act="ac-open" id="ac-btn">Compte<i class="acdot" id="ac-dot"></i></button>
   </div>
@@ -290,8 +327,13 @@ input,textarea,select{font-size:16px}
   </main>
 
   <main id="v-brouillon" class="view" hidden>
-    <h1>Brouillon</h1>
-    <div id="l-notes" style="display:flex;flex-direction:column;gap:12px"></div>
+    <div id="nb-list" class="view">
+      <div class="nb-head"><h1>Brouillon</h1><span class="n" id="nb-count"></span></div>
+      <label class="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg><input type="search" id="nb-q" placeholder="Rechercher" aria-label="Rechercher dans les notes" autocomplete="off" enterkeyhint="search"></label>
+      <div class="chips scroll" id="nb-folders" role="group" aria-label="Dossiers"></div>
+      <div id="l-notes" class="view"></div>
+    </div>
+    <div id="nb-ed" hidden></div>
   </main>
 </div>
 
@@ -312,7 +354,7 @@ input,textarea,select{font-size:16px}
 <form class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sh-h" tabindex="-1" autocomplete="off"></form>
 
 <div class="toast" id="toast" role="status">
-  <span id="toast-txt"></span><button type="button" data-act="undo">Annuler</button>
+  <span id="toast-txt"></span><button type="button" data-act="undo" id="toast-undo">Annuler</button>
 </div>
 
 <script>
@@ -332,7 +374,7 @@ var KIND_HINT={
   goal:"Un cap sur plusieurs semaines ou mois, que tu découpes en étapes."
 };
 
-var state={items:new Map(),filter:"Tout",subj:"Tout",day:"",showDone:{taches:false,devoirs:false},arr:{taches:false,devoirs:false},mode:"loading",note:""};
+var state={items:new Map(),filter:"Tout",subj:"Tout",day:"",showDone:{taches:false,devoirs:false},arr:{taches:false,devoirs:false},mode:"loading",note:"",nfolder:"Toutes",nq:"",noteOpen:null};
 var dirty={}, noteTimers={}, lastNoteIds=null;
 var lastDeleted=null, toastTimer=null, focusAfter=null;
 var sheet=null, opener=null, orderGroups={};
@@ -675,34 +717,136 @@ function animateFills(){
   });
 }
 
-/* ---------- Brouillon ---------- */
-function autosize(){
-  document.querySelectorAll(".note-ta").forEach(function(ta){ta.style.height="auto";if(ta.scrollHeight)ta.style.height=ta.scrollHeight+"px";});
+/* ---------- Brouillon : liste façon Notes, éditeur façon Notion ---------- */
+var PIN='<svg class="pin" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6l-1 6 4 4H6l4-4z"/><path d="M12 13v8"/></svg>';
+function norm(x){return String(x||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");}
+function nFolders(){var p=state.items.get("prefs");return p&&Array.isArray(p.nfolders)?p.nfolders.slice():[];}
+function setNFolders(l){var p=prefs();p.nfolders=l;save("prefs",p);}
+function cleanFolder(v){var c=cap(String(v||"").trim()).slice(0,24);return (!c||c==="Toutes")?"":c;}
+function nLines(d){return String(d.text||"").split("\n").map(function(x){return x.trim();}).filter(Boolean);}
+function noteTitle(d){var t=String(d.title||"").trim();if(t)return t;return nLines(d)[0]||"Nouvelle note";}
+function notePreview(d){var l=nLines(d);if(!String(d.title||"").trim())l=l.slice(1);return l.map(function(x){return x.replace(/^([-*•–]|\d+[.)]|\[[ xX]?\])\s*/,"");}).filter(Boolean).join(" ").slice(0,160);}
+function noteTs(d){return d.updated||d.created||0;}
+function hhmm(ts){return new Date(ts).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});}
+function noteWhen(ts){
+  var day=iso(new Date(ts)),n=diffDays(today(),day);
+  if(n===0)return hhmm(ts);if(n===1)return "Hier";if(n<7)return cap(new Date(ts).toLocaleDateString("fr-FR",{weekday:"long"}));
+  return new Date(ts).toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit",year:"numeric"});
+}
+function noteGroup(ts){
+  var day=iso(new Date(ts)),n=diffDays(today(),day);
+  if(n<=0)return "Aujourd'hui";if(n===1)return "Hier";if(n<7)return "7 derniers jours";if(n<30)return "30 derniers jours";
+  return cap(new Date(ts).toLocaleDateString("fr-FR",{month:"long",year:"numeric"}));
+}
+function noteRow(x,showFolder){
+  var d=x.d,pv=notePreview(d);
+  return '<button type="button" class="nrow" data-act="note-open" data-id="'+esc(x.id)+'">'+
+    '<span class="nt">'+(d.pinned?PIN:"")+'<span>'+esc(noteTitle(d))+'</span></span>'+
+    '<span class="np"><b>'+esc(noteWhen(noteTs(d)))+'</b>'+esc(pv||"Pas de texte")+'</span>'+
+    (showFolder&&d.folder?'<span class="nf">'+esc(d.folder)+'</span>':"")+'</button>';
+}
+function renderNoteList(){
+  var all=byKind("note"), q=norm(state.nq.trim());
+  var notes=all.filter(function(x){return state.nfolder==="Toutes"||(x.d.folder||"")===state.nfolder;});
+  if(q)notes=notes.filter(function(x){return norm((x.d.title||"")+"\n"+(x.d.text||"")+"\n"+(x.d.folder||"")).indexOf(q)>=0;});
+  notes.sort(function(a,b){return noteTs(b.d)-noteTs(a.d);});
+  $("nb-count").textContent=all.length?all.length+(all.length>1?" notes":" note"):"";
+  if(state.mode==="loading"){$("l-notes").innerHTML='<div class="list"><div class="empty">Chargement…</div></div>';return;}
+  if(!notes.length){
+    $("l-notes").innerHTML='<div class="list"><div class="empty">'+(q?"Aucune note ne contient « "+esc(state.nq.trim())+" ».":state.nfolder!=="Toutes"?"Ce dossier est vide. Touche + pour y écrire une note.":"Aucune note pour l'instant. Touche + pour en écrire une.")+'</div></div>';return;
+  }
+  if(q){$("l-notes").innerHTML=block("Résultats",notes.length,notes.map(function(x){return noteRow(x,true);}).join(""));return;}
+  var h="", pins=notes.filter(function(x){return x.d.pinned;}), rest=notes.filter(function(x){return !x.d.pinned;});
+  if(pins.length)h+=block("Épinglées",pins.length,pins.map(function(x){return noteRow(x,state.nfolder==="Toutes");}).join(""));
+  var groups=[],by={};
+  rest.forEach(function(x){var g=noteGroup(noteTs(x.d));if(!by[g]){by[g]=[];groups.push(g);}by[g].push(x);});
+  groups.forEach(function(g){h+=block(g,by[g].length,by[g].map(function(x){return noteRow(x,state.nfolder==="Toutes");}).join(""));});
+  $("l-notes").innerHTML=h;
+}
+function folderChips(){
+  var fl=nFolders();
+  if(state.nfolder!=="Toutes"&&fl.indexOf(state.nfolder)<0)state.nfolder="Toutes";
+  return (fl.length?["Toutes"].concat(fl).map(function(c){
+    return '<button type="button" class="chip" aria-pressed="'+(state.nfolder===c)+'" data-act="nfilter" data-v="'+esc(c)+'">'+esc(c)+'</button>';
+  }).join(""):"")+'<button type="button" class="chip quiet" data-act="nf-manage">'+(fl.length?"Gérer":"Créer un dossier")+'</button>';
+}
+function autosize(){["ne-title","ne-body"].forEach(function(k){var ta=$(k);if(ta){ta.style.height="auto";if(ta.scrollHeight)ta.style.height=ta.scrollHeight+"px";}});}
+function edMeta(d){var ts=noteTs(d);return ts?"Modifié "+(diffDays(today(),iso(new Date(ts)))===0?"aujourd'hui":"le "+new Date(ts).toLocaleDateString("fr-FR",{day:"numeric",month:"long"}))+" à "+hhmm(ts):"";}
+function edFolders(d){
+  var fl=nFolders(),cur=d.folder||"";
+  if(cur&&fl.indexOf(cur)<0)fl.push(cur);
+  return ['<button type="button" class="chip" aria-pressed="'+(!cur)+'" data-act="note-folder" data-v="">Sans dossier</button>'].concat(fl.map(function(c){
+    return '<button type="button" class="chip" aria-pressed="'+(cur===c)+'" data-act="note-folder" data-v="'+esc(c)+'">'+esc(c)+'</button>';
+  })).join("")+'<button type="button" class="chip quiet" data-act="nf-new">Nouveau dossier</button>';
+}
+function renderEditor(){
+  var id=state.noteOpen,d=state.items.get(id),ed=$("nb-ed");
+  document.body.classList.add("editing");$("nb-list").hidden=true;ed.hidden=false;
+  if(ed.dataset.id===id&&$("ne-body")){
+    // déjà affiché : on ne touche pas au champ en cours de frappe
+    var a=document.activeElement;
+    if(a!==$("ne-title")&&$("ne-title").value!==(d.title||""))$("ne-title").value=d.title||"";
+    if(a!==$("ne-body")&&$("ne-body").value!==(d.text||""))$("ne-body").value=d.text||"";
+    $("ne-pin").setAttribute("aria-pressed",String(!!d.pinned));$("ne-pin").setAttribute("aria-label",d.pinned?"Désépingler":"Épingler");
+    $("ne-folders").innerHTML=edFolders(d);$("ne-meta").textContent=edMeta(d);autosize();return;
+  }
+  ed.dataset.id=id;
+  ed.innerHTML='<div class="ne-top"><button type="button" class="back" data-act="note-close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Brouillon</button><span class="sp"></span>'+
+    '<button type="button" class="icon" id="ne-pin" data-act="note-pin" aria-pressed="'+(!!d.pinned)+'" aria-label="'+(d.pinned?"Désépingler":"Épingler")+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6l-1 6 4 4H6l4-4z"/><path d="M12 13v8"/></svg></button>'+
+    '<button type="button" class="icon" data-act="note-del" aria-label="Supprimer la note"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button></div>'+
+    '<div class="ne'+(reduce.matches?"":" enter")+'">'+
+    '<div class="chips scroll ne-folders" id="ne-folders" role="group" aria-label="Dossier de la note">'+edFolders(d)+'</div>'+
+    '<textarea id="ne-title" class="ne-title" rows="1" placeholder="Sans titre" maxlength="200" aria-label="Titre de la note" autocapitalize="sentences" enterkeyhint="next">'+esc(d.title||"")+'</textarea>'+
+    '<div class="ne-meta" id="ne-meta">'+esc(edMeta(d))+'</div>'+
+    '<textarea id="ne-body" class="ne-body" placeholder="Écris ici…" maxlength="20000" aria-label="Texte de la note" autocapitalize="sentences">'+esc(d.text||"")+'</textarea></div>'+
+    '<div class="ne-tools" id="ne-tools"><button type="button" data-act="note-task"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="5"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/></svg>Faire de la ligne une tâche</button></div>';
+  autosize();placeTools();
 }
 function renderBrouillon(){
-  var notes=byKind("note").reverse(), ids=notes.map(function(n){return n.id;}).join(",");
-  var a=document.activeElement;
-  // ne redessine pas la page pendant qu'on écrit dedans
-  if(a&&a.classList&&a.classList.contains("note-ta")&&ids===lastNoteIds)return;
-  lastNoteIds=ids;
-  $("l-notes").innerHTML=notes.length?notes.map(function(n){
-    var when="";
-    if(n.d.updated){var dt=new Date(n.d.updated);when="Modifié le "+dt.toLocaleDateString("fr-FR",{day:"numeric",month:"short"})+" à "+dt.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});}
-    return '<div class="note-card"><textarea class="note-ta" id="note-'+esc(n.id)+'" data-id="'+esc(n.id)+'" rows="1" placeholder="Écris ce que tu veux ici" aria-label="Page de brouillon" maxlength="20000">'+esc(n.d.text||"")+'</textarea>'+
-      '<div class="note-foot"><span>'+esc(when)+'</span><button type="button" class="x" data-act="del" data-id="'+esc(n.id)+'" aria-label="Supprimer cette page">×</button></div></div>';
-  }).join(""):'<div class="list"><div class="empty">'+(state.mode==="loading"?"Chargement…":"Ton cahier est vide. Touche + pour ouvrir une page et écrire ce que tu veux.")+'</div></div>';
-  autosize();
+  if(state.noteOpen&&!state.items.has(state.noteOpen)){state.noteOpen=null;try{history.replaceState(null,"","#brouillon");}catch(e){}}
+  if(state.noteOpen&&curView==="brouillon"){renderEditor();return;}
+  document.body.classList.remove("editing");$("nb-ed").hidden=true;$("nb-ed").dataset.id="";$("nb-ed").innerHTML="";$("nb-list").hidden=false;
+  $("nb-folders").innerHTML=folderChips();
+  if($("nb-q").value!==state.nq&&document.activeElement!==$("nb-q"))$("nb-q").value=state.nq;
+  renderNoteList();
 }
 function flushNote(id){
   clearTimeout(noteTimers[id]);
-  var data=dirty[id];if(!data)return;
   delete dirty[id];
 }
-function newNote(){
-  var empty=byKind("note").filter(function(n){return !(n.d.text||"").trim();})[0];
-  if(empty){var el=$("note-"+empty.id);if(el){el.focus();return;}}
-  var nid=newId();focusAfter="note-"+nid;save(nid,{kind:"note",text:"",created:Date.now(),updated:0});
+function leaveNote(id){
+  // une note laissée vide ne reste pas dans le cahier
+  var d=state.items.get(id);if(!d)return;
+  if(!String(d.title||"").trim()&&!String(d.text||"").trim())remove(id);else flushNote(id);
 }
+function openNote(id,focus){
+  var d=get(id);if(!d)return;
+  // anciennes notes sans titre : la première ligne devient le titre
+  if(d.title===undefined){var l=String(d.text||"").split("\n"),f=(l[0]||"").trim();if(f&&f.length<=80){d.title=f;d.text=l.slice(1).join("\n").replace(/^\n+/,"");}else d.title="";put(id,d);persistLocal();}
+  if(state.noteOpen&&state.noteOpen!==id)leaveNote(state.noteOpen);
+  state.noteOpen=id;
+  try{history.pushState(null,"","#brouillon/"+encodeURIComponent(id));}catch(e){}
+  render();window.scrollTo(0,0);
+  if(focus){var el=$(focus);if(el)el.focus();}
+}
+function closeNote(){
+  var id=state.noteOpen;if(!id)return;
+  state.noteOpen=null;leaveNote(id);
+  try{history.replaceState(null,"","#brouillon");}catch(e){}
+  render();
+}
+function newNote(){
+  var nid=newId(),now=Date.now();
+  save(nid,{kind:"note",title:"",text:"",folder:state.nfolder!=="Toutes"?state.nfolder:"",pinned:false,created:now,updated:now});
+  openNote(nid,"ne-title");
+}
+// la barre « Faire de la ligne une tâche » reste au-dessus du clavier
+function placeTools(){
+  var el=$("ne-tools"),vv=window.visualViewport;if(!el)return;
+  var kb=vv?Math.max(0,window.innerHeight-vv.height-vv.offsetTop):0;
+  el.style.transform=kb>40?"translateY("+(-kb)+"px)":"";
+}
+if(window.visualViewport){visualViewport.addEventListener("resize",placeTools);visualViewport.addEventListener("scroll",placeTools);}
 
 /* ---------- fiche d'ajout et de modification ---------- */
 function blankDraft(){return {title:"",cat:(cats()[0]||"Perso"),newCat:false,newCatName:"",freq:0,subject:"",due:"",other:false,prio:false,goal:"",tm:"",ty:String(new Date().getFullYear())};}
@@ -750,6 +894,13 @@ function renderSheet(){
       '<label class="btn ghost filebtn">Importer une sauvegarde<input type="file" id="sh-import" accept=".json,application/json"></label></div>'+
       '<div class="hint" style="margin-top:0">'+(dr.msg?esc(dr.msg):(isDate(last)?"Dernier export le "+esc(fmt(last,{day:"numeric",month:"long",year:"numeric"}))+".":"Aucun export pour l\'instant."))+'</div>'+
       '<div class="hint" style="margin-top:0">Importer ajoute les éléments du fichier à ceux déjà présents. Pour passer d\'un appareil à l\'autre : exporte sur le premier, importe sur le second.</div>';
+    $("sheet").innerHTML=h;return;
+  }
+  if(k==="nfolders"){
+    h='<div class="sh-head"><button type="button" class="btn ghost small" data-act="close-sheet">Fermer</button><h2 id="sh-h">'+(sheet.forNote?"Nouveau dossier":"Dossiers")+'</h2><span style="width:78px"></span></div>'+
+      '<div class="addcat"><input type="text" id="sh-nfname" placeholder="Nom du dossier, ex. Cours" aria-label="Nouveau dossier" maxlength="24" autocapitalize="sentences"><button type="submit" class="btn">'+(sheet.forNote?"Créer et ranger":"Ajouter")+'</button></div>'+
+      (sheet.forNote?"":'<div class="catlist">'+nFolders().map(function(c){var n=byKind("note").filter(function(x){return x.d.folder===c;}).length;return '<div class="catrow"><span>'+esc(c)+' <span style="color:var(--muted)">· '+n+'</span></span><button type="button" class="x" data-act="nf-del" data-v="'+esc(c)+'" aria-label="Supprimer le dossier '+esc(c)+'">×</button></div>';}).join("")+'</div>'+
+      '<div class="hint" style="margin-top:0">Supprimer un dossier ne supprime pas ses notes : elles passent dans « Sans dossier ».</div>');
     $("sheet").innerHTML=h;return;
   }
   if(k==="cats"){
@@ -812,6 +963,13 @@ function renderSheet(){
 function saveSheet(){
   if(sheet.kind==="backup")return;
   if(sheet.kind==="account"){acPrimary();return;}
+  if(sheet.kind==="nfolders"){
+    var fe=$("sh-nfname"), fn=cleanFolder(fe.value);
+    if(!fn){fe.focus();return;}
+    var fl=nFolders();if(fl.indexOf(fn)<0){fl.push(fn);setNFolders(fl);}
+    if(sheet.forNote){var fd=get(sheet.forNote);if(fd){fd.folder=fn;save(sheet.forNote,fd);}closeSheet();return;}
+    renderSheet();$("sh-nfname").focus();return;
+  }
   if(sheet.kind==="cats"){
     var ce=$("sh-catname"), cn=cleanCat(ce.value);
     if(!cn){ce.focus();return;}
@@ -834,7 +992,9 @@ function saveSheet(){
     else if(k==="hw")data={kind:"task",title:title,cat:"Devoir",subject:cap(dr.subject.trim()),due:dr.due||"",prio:!!dr.prio,done:false,goal:dr.goal||"",created:now};
     else if(k==="daily")data=dr.freq>0?{kind:"weekly",title:title,target:dr.freq,dones:[],goal:dr.goal||"",created:now}:{kind:"daily",title:title,lastDone:"",streak:0,goal:dr.goal||"",created:now};
     else data={kind:"goal",title:title,target:target,steps:[],reached:false,created:now};
-    closeSheet();save(newId(),data);return;
+    closeSheet();save(newId(),data);
+    if(s.fromNote)showToast("Tâche ajoutée : « "+(title.length>32?title.slice(0,32)+"…":title)+" »",true);
+    return;
   }
   var d=get(s.id);if(!d){closeSheet();return;}
   if(k==="step"){if(d.steps&&d.steps[s.i])d.steps[s.i].t=title;}
@@ -861,24 +1021,27 @@ function render(){
   if(fid){var el=$(fid);if(el&&el!==document.activeElement){el.focus();if(keep&&keep.id===fid){if(!el.value)el.value=keep.v;try{el.setSelectionRange(keep.s,keep.e);}catch(e){}}}}
 }
 function route(){
-  var h=(location.hash||"").slice(1), v=TABS.indexOf(h)>=0?h:"jour";
+  var h=(location.hash||"").slice(1), parts=h.split("/"), v=TABS.indexOf(parts[0])>=0?parts[0]:"jour";
+  var want=v==="brouillon"&&parts[1]?decodeURIComponent(parts[1]):null;
+  if(state.noteOpen&&state.noteOpen!==want){var was=state.noteOpen;state.noteOpen=null;leaveNote(was);}
+  state.noteOpen=want&&state.items.has(want)?want:null;
   TABS.forEach(function(t){$("v-"+t).hidden=t!==v;});
   if(curView&&curView!==v&&!reduce.matches&&$("v-"+v).animate)$("v-"+v).animate([{opacity:0,transform:"translateY(6px)"},{opacity:1,transform:"none"}],{duration:180,easing:EASE});
   curView=v;
-  if(v==="brouillon")autosize();
-  $("fab").setAttribute("aria-label",v==="brouillon"?"Nouvelle page":"Ajouter");
+  $("fab").setAttribute("aria-label",v==="brouillon"?"Nouvelle note":"Ajouter");
+  render();
   document.querySelectorAll("nav.tabs a").forEach(function(a){if(a.dataset.tab===v)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current");});
 }
 
 /* ---------- actions ---------- */
-function showToast(txt){
-  $("toast-txt").textContent=txt;$("toast").classList.add("open");
+function showToast(txt,noUndo){
+  $("toast-txt").textContent=txt;$("toast-undo").hidden=!!noUndo;if(noUndo)lastDeleted=null;$("toast").classList.add("open");
   clearTimeout(toastTimer);toastTimer=setTimeout(function(){$("toast").classList.remove("open");lastDeleted=null;},6000);
 }
 function delItem(id,d){
   lastDeleted={id:id,data:d};remove(id);
   var ti=cap(d.title||"");
-  showToast(d.kind==="note"?"Page supprimée":"« "+(ti.length>40?ti.slice(0,40)+"…":ti)+" » supprimé");
+  showToast(d.kind==="note"?"Note supprimée":"« "+(ti.length>40?ti.slice(0,40)+"…":ti)+" » supprimé");
 }
 document.addEventListener("click",function(ev){
   var b=ev.target.closest("[data-act]");if(!b)return;
@@ -887,8 +1050,34 @@ document.addEventListener("click",function(ev){
   /* fiche */
   if(act==="close-sheet"){closeSheet();return;}
   if(act&&act.slice(0,3)==="ac-"){acAct(act,b);return;}
+  /* Brouillon */
+  if(act==="note-open"){openNote(id);return;}
+  if(act==="note-close"){closeNote();return;}
+  if(act==="nfilter"){state.nfolder=b.dataset.v;render();return;}
+  if(act==="nf-manage"||act==="nf-new"){openSheet({mode:"edit",kind:"nfolders",draft:blankDraft(),forNote:act==="nf-new"?state.noteOpen:null},b);setTimeout(function(){var el=$("sh-nfname");if(el)el.focus();},80);return;}
+  if(act==="nf-del"&&sheet){
+    var gone=b.dataset.v;setNFolders(nFolders().filter(function(c){return c!==gone;}));
+    byKind("note").forEach(function(x){if(x.d.folder===gone){var nd=get(x.id);nd.folder="";put(x.id,nd);}});
+    if(state.nfolder===gone)state.nfolder="Toutes";
+    persistLocal();render();renderSheet();$("sheet").focus();return;
+  }
+  if(state.noteOpen&&(act==="note-pin"||act==="note-folder"||act==="note-del"||act==="note-task")){
+    var nid=state.noteOpen,nd2=get(nid);if(!nd2)return;
+    if(act==="note-pin"){nd2.pinned=!nd2.pinned;save(nid,nd2);showToast(nd2.pinned?"Note épinglée en haut du Brouillon":"Note désépinglée",true);return;}
+    if(act==="note-folder"){nd2.folder=b.dataset.v;save(nid,nd2);return;}
+    if(act==="note-del"){state.noteOpen=null;try{history.replaceState(null,"","#brouillon");}catch(e){}delItem(nid,nd2);return;}
+    if(act==="note-task"){
+      var ta=$("ne-body"),v0=ta?ta.value:"",a0=ta?ta.selectionStart:0,b0=ta?ta.selectionEnd:0,line="";
+      if(b0>a0)line=(v0.slice(a0,b0).split("\n").map(function(x){return x.trim();}).filter(Boolean)[0])||"";
+      else{var s0=v0.lastIndexOf("\n",a0-1)+1,e0=v0.indexOf("\n",a0);if(e0<0)e0=v0.length;line=v0.slice(s0,e0);}
+      line=line.replace(/^\s*([-*•–]|\d+[.)]|\[[ xX]?\])\s*/,"").trim();
+      if(!line){showToast("Place le curseur sur une ligne de la note",true);return;}
+      dr=blankDraft();dr.title=cap(line).slice(0,200);
+      openSheet({mode:"new",kind:"task",draft:dr,fromNote:nid},b);return;
+    }
+  }
   if(act==="add"){
-    if(curView==="brouillon"){newNote();return;}
+    if(curView==="brouillon"){if(!state.noteOpen)newNote();return;}
     dr=blankDraft();
     var kind=curView==="devoirs"?"hw":curView==="objectifs"?"goal":"task";
     if(curView==="jour")dr.due=state.day||t;
@@ -1007,20 +1196,24 @@ document.addEventListener("visibilitychange",function(){
   if(document.hidden)Object.keys(dirty).forEach(flushNote);else render();
 });
 document.addEventListener("input",function(ev){
-  var ta=ev.target;if(!ta.classList||!ta.classList.contains("note-ta"))return;
-  var id=ta.dataset.id,d=get(id);if(!d)return;
-  d.text=ta.value;d.updated=Date.now();
+  var ta=ev.target;if(!ta)return;
+  if(ta.id==="nb-q"){state.nq=ta.value;renderNoteList();return;}
+  if(ta.id!=="ne-title"&&ta.id!=="ne-body")return;
+  var id=state.noteOpen,d=get(id);if(!d)return;
+  if(ta.id==="ne-title"){if(/\n/.test(ta.value))ta.value=ta.value.replace(/\n/g," ");d.title=ta.value;}else d.text=ta.value;
+  d.updated=Date.now();
   state.items.set(id,d);dirty[id]=d;persistLocal();
   ta.style.height="auto";ta.style.height=ta.scrollHeight+"px";
+  var m=$("ne-meta");if(m)m.textContent=edMeta(d);
   clearTimeout(noteTimers[id]);noteTimers[id]=setTimeout(function(){flushNote(id);},700);
 });
-document.addEventListener("focusout",function(ev){
-  var ta=ev.target;if(!ta.classList||!ta.classList.contains("note-ta"))return;
-  var id=ta.dataset.id;
-  // une page laissée vide ne reste pas dans le cahier
-  if(!ta.value.trim()&&state.items.has(id)&&byKind("note").length>0){remove(id);return;}
-  flushNote(id);
+document.addEventListener("keydown",function(ev){
+  // Entrée dans le titre : on passe au texte, comme dans Notion
+  if(ev.target&&ev.target.id==="ne-title"&&ev.key==="Enter"){ev.preventDefault();var bd=$("ne-body");if(bd){bd.focus();bd.setSelectionRange(0,0);}}
+  if(ev.key==="Escape"&&!sheet&&state.noteOpen)closeNote();
 });
+// garder le curseur dans la note quand on touche la barre d'outils
+document.addEventListener("pointerdown",function(ev){if(ev.target.closest&&ev.target.closest(".ne-tools"))ev.preventDefault();});
 
 /* ---------- démarrage ---------- */
 function localMode(note){
@@ -1032,7 +1225,7 @@ function localMode(note){
 }
 
 /* ---------- version, mises à jour ---------- */
-var APPV="2026-11-17.3";
+var APPV="2026-11-17.4";
 /* 4. bouton + : se range au défilement vers le bas */
 (function(){var y=window.scrollY,f=document.getElementById("fab");
   addEventListener("scroll",function(){var n=window.scrollY,d=n-y;
