@@ -291,6 +291,54 @@ input,textarea,select{font-size:16px}
 .hab .grid i.on{background:var(--ink)}
 .hab .grid i.fut{opacity:.35}
 .hab .grid i.now{box-shadow:inset 0 0 0 1.5px var(--ink)}
+
+/* Réglages */
+.gear{width:46px;height:46px;padding:0;border-radius:50%;display:grid;place-items:center;position:relative}
+.gear svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transition:transform 300ms var(--ease-out)}
+.gear:active svg{transform:rotate(45deg)}
+.gear .acdot{position:absolute;top:8px;right:8px;margin:0;width:9px;height:9px;box-shadow:0 0 0 2px var(--surface)}
+.gear .acdot:not(.ok):not(.err){display:none}
+.sgroup{display:flex;flex-direction:column;gap:7px}
+.slab{margin:0;padding:0 4px;font-size:13px;font-weight:600;color:var(--muted)}
+.slist{background:var(--surface);border-radius:18px;overflow:hidden}
+.srow{display:flex;align-items:center;gap:12px;width:100%;min-height:56px;padding:9px 14px;border:0;background:none;text-align:left;position:relative;transition:background-color 150ms ease}
+.srow+.srow::before,.sdetail+.srow::before{content:"";position:absolute;top:0;left:56px;right:0;height:1px;background:var(--line)}
+.srow:active{background:var(--bg)}
+.si{width:30px;height:30px;border-radius:9px;background:var(--ink);color:#fff;display:grid;place-items:center;flex:none}
+.si svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.si.red{background:var(--late)}
+.sl{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;font-weight:600;font-size:15px}
+.sl small{font-weight:500;font-size:13px;color:var(--muted);line-height:1.3}
+.sv{color:var(--muted);font-size:15px;font-weight:500}
+.chev{width:16px;height:16px;flex:none;stroke:#b5b9c1;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;transition:transform 200ms var(--ease-out)}
+.srow[aria-expanded="true"] .chev{transform:rotate(90deg)}
+.srow.danger .sl{color:var(--late)}
+.sw{width:50px;height:30px;border-radius:999px;background:#d5d8de;position:relative;flex:none;transition:background-color 200ms ease}
+.sw i{position:absolute;top:2px;left:2px;width:26px;height:26px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform 220ms var(--ease-out)}
+.srow[aria-checked="true"] .sw{background:var(--credit)}
+.srow[aria-checked="true"] .sw i{transform:translateX(20px)}
+.sdetail{margin:0;padding:0 16px 14px 56px;font-size:14px;color:var(--muted);line-height:1.5}
+ol.sdetail,ul.sdetail{padding-left:74px;display:flex;flex-direction:column;gap:6px}
+.sdetail.news{list-style:none;padding-left:56px}
+.sdetail.news b{display:block;color:var(--ink);font-size:13px}
+.snote{margin:0;padding:0 4px;font-size:13px;color:var(--muted);line-height:1.45}
+.prof{display:flex;align-items:center;gap:14px;background:var(--surface);border-radius:20px;padding:14px 14px 14px 16px}
+.av{width:50px;height:50px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;font-weight:800;font-size:21px;flex:none}
+.prof .pi{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.prof .pe{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prof .ps{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--muted)}
+.prof .ps .acdot{margin:0;flex:none}
+.prof .icon{background:var(--bg)}
+.spin{animation:spin 900ms linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat{background:var(--surface);border-radius:18px;padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.stat b{font-size:30px;font-weight:800;letter-spacing:-.04em;line-height:1}
+.stat b small{font-size:16px;color:var(--muted);letter-spacing:0}
+.stat span{font-size:13px;color:var(--muted);line-height:1.3}
+.stat.hl{background:var(--ink);color:var(--surface)}
+.stat.hl span{color:var(--hero-soft)}
+@media (prefers-reduced-motion:reduce){.spin{animation:none}}
 </style>
 </head>
 <body>
@@ -298,7 +346,7 @@ input,textarea,select{font-size:16px}
 <div class="app" id="app">
   <div id="top" style="display:flex;justify-content:space-between;align-items:center;gap:12px">
     <div class="brand">Closer</div>
-    <button type="button" class="btn ghost small" data-act="ac-open" id="ac-btn">Compte<i class="acdot" id="ac-dot"></i></button>
+    <button type="button" class="btn ghost gear" data-act="ac-open" id="ac-btn" aria-label="Réglages"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><i class="acdot" id="ac-dot"></i></button>
   </div>
   <div class="note" id="note" hidden></div>
 
@@ -504,6 +552,7 @@ var badgeLast=-1;
 function badgeOk(){return "setAppBadge" in navigator;}
 function setBadge(n){
   if(!badgeOk()||n===badgeLast)return;badgeLast=n;
+  if(badgeOff())n=0;
   try{(n?navigator.setAppBadge(n):navigator.clearAppBadge()).catch(function(){});}catch(e){}
 }
 
@@ -897,14 +946,14 @@ function renderSheet(){
     $("sheet").innerHTML=h;return;
   }
   if(k==="nfolders"){
-    h='<div class="sh-head"><button type="button" class="btn ghost small" data-act="close-sheet">Fermer</button><h2 id="sh-h">'+(sheet.forNote?"Nouveau dossier":"Dossiers")+'</h2><span style="width:78px"></span></div>'+
+    h='<div class="sh-head">'+(sheet.back?'<button type="button" class="btn ghost small" data-act="ac-open">Retour</button>':'<button type="button" class="btn ghost small" data-act="close-sheet">Fermer</button>')+'<h2 id="sh-h">'+(sheet.forNote?"Nouveau dossier":"Dossiers")+'</h2><span style="width:78px"></span></div>'+
       '<div class="addcat"><input type="text" id="sh-nfname" placeholder="Nom du dossier, ex. Cours" aria-label="Nouveau dossier" maxlength="24" autocapitalize="sentences"><button type="submit" class="btn">'+(sheet.forNote?"Créer et ranger":"Ajouter")+'</button></div>'+
       (sheet.forNote?"":'<div class="catlist">'+nFolders().map(function(c){var n=byKind("note").filter(function(x){return x.d.folder===c;}).length;return '<div class="catrow"><span>'+esc(c)+' <span style="color:var(--muted)">· '+n+'</span></span><button type="button" class="x" data-act="nf-del" data-v="'+esc(c)+'" aria-label="Supprimer le dossier '+esc(c)+'">×</button></div>';}).join("")+'</div>'+
       '<div class="hint" style="margin-top:0">Supprimer un dossier ne supprime pas ses notes : elles passent dans « Sans dossier ».</div>');
     $("sheet").innerHTML=h;return;
   }
   if(k==="cats"){
-    h='<div class="sh-head"><button type="button" class="btn ghost small" data-act="close-sheet">Fermer</button><h2 id="sh-h">Catégories</h2><span style="width:78px"></span></div>'+
+    h='<div class="sh-head">'+(sheet.back?'<button type="button" class="btn ghost small" data-act="ac-open">Retour</button>':'<button type="button" class="btn ghost small" data-act="close-sheet">Fermer</button>')+'<h2 id="sh-h">Catégories</h2><span style="width:78px"></span></div>'+
       '<div class="addcat"><input type="text" id="sh-catname" placeholder="Nouvelle catégorie, ex. Sport" aria-label="Nouvelle catégorie" maxlength="24" autocapitalize="sentences"><button type="submit" class="btn">Ajouter</button></div>'+
       '<div class="catlist">'+cats().map(function(c){return '<div class="catrow"><span>'+esc(c)+'</span><button type="button" class="x" data-act="cat-del" data-v="'+esc(c)+'" aria-label="Retirer la catégorie '+esc(c)+'">×</button></div>';}).join("")+'</div>'+
       '<div class="hint" style="margin-top:0">Retirer une catégorie ne supprime pas ses tâches : elles gardent leur étiquette.</div>';
@@ -1112,7 +1161,15 @@ document.addEventListener("click",function(ev){
     return;
   }
   if(act==="backup"){if(sheet){sheet={mode:"edit",kind:"backup",draft:blankDraft()};renderSheet();$("sheet").scrollTop=0;$("sheet").focus();}else openSheet({mode:"edit",kind:"backup",draft:blankDraft()},b);return;}
-  if(act==="badge-on"){try{Notification.requestPermission().then(function(){badgeLast=-1;render();if(sheet)renderSheet();});}catch(e){}return;}
+  if(act==="set-badge"){
+    var pm=("Notification" in window)?Notification.permission:"";
+    if(pm==="denied")return;
+    if(pm!=="granted"){try{localStorage.removeItem("closer-badge-off");Notification.requestPermission().then(function(){badgeLast=-1;render();if(sheet)renderSheet();});}catch(e){}return;}
+    try{if(badgeOff())localStorage.removeItem("closer-badge-off");else localStorage.setItem("closer-badge-off","1");}catch(e){}
+    badgeLast=-1;render();renderSheet();return;
+  }
+  if(act==="set-a2hs"||act==="set-news"){var k2=act==="set-a2hs"?"a2hs":"news";setOpen[k2]=!setOpen[k2];renderSheet();return;}
+  if(act==="set-cats"||act==="set-folders"){sheet={mode:"edit",kind:act==="set-cats"?"cats":"nfolders",draft:blankDraft(),back:true};renderSheet();$("sheet").scrollTop=0;$("sheet").focus();return;}
   if(act==="export"&&sheet){
     var blob=new Blob([JSON.stringify({app:"closer",version:1,exported:new Date().toISOString(),items:Array.from(state.items.entries())},null,1)],{type:"application/json"});
     var link=document.createElement("a");link.href=URL.createObjectURL(blob);link.download="closer-sauvegarde-"+t+".json";
@@ -1225,7 +1282,7 @@ function localMode(note){
 }
 
 /* ---------- version, mises à jour ---------- */
-var APPV="2026-11-17.4";
+var APPV="2026-11-17.5";
 /* 4. bouton + : se range au défilement vers le bas */
 (function(){var y=window.scrollY,f=document.getElementById("fab");
   addEventListener("scroll",function(){var n=window.scrollY,d=n-y;
@@ -1373,41 +1430,125 @@ function pwField(ac,ph,neu){
 }
 function emField(){return '<div class="field"><label for="ac-em">E-mail</label><input type="email" id="ac-em" inputmode="email" autocomplete="email" autocapitalize="none" value="'+esc(AS.email||"")+'" placeholder="ton@adresse.fr"></div>';}
 function hm(t){return new Date(t).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});}
+/* ---------- Réglages ---------- */
+var IC={
+  tag:'<path d="M3 12V4h8l9 9-8 8z"/><circle cx="7.5" cy="7.5" r="1.2"/>',
+  folder:'<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+  badge:'<rect x="3.5" y="6.5" width="14" height="14" rx="4"/><circle cx="18" cy="6" r="3"/>',
+  chart:'<path d="M5 20V11M12 20V4M19 20v-7"/>',
+  data:'<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>',
+  key:'<circle cx="8" cy="15" r="4"/><path d="M11 12l8-8M16 7l2 2"/>',
+  out:'<path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4M10 16l-4-4 4-4M6 12h10"/>',
+  trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
+  news:'<path d="M12 3l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/>',
+  mail:'<rect x="3" y="5" width="18" height="14" rx="3"/><path d="M4 7l8 6 8-6"/>',
+  shield:'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>',
+  home:'<rect x="6" y="2.5" width="12" height="19" rx="3"/><path d="M12 9v6M9 12h6"/>',
+  sync:'<path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/>'
+};
+var CHEV='<svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>';
+var NEWS=[
+  ["17 nov.","Réglages repensés : rouage, statistiques, préférences au même endroit, guide « écran d'accueil »."],
+  ["17 nov.","Brouillon façon Notes : notes repliées, dossiers, épingles, recherche, ligne → tâche."],
+  ["17 nov.","Synchro plus fiable, bloc Habitudes, historique sur 4 semaines, pastille sur l'icône."],
+  ["16 nov.","Version iPhone : plein écran, gestes, glisser une fiche vers le bas pour la fermer."],
+  ["16 nov.","Comptes et synchronisation entre tous tes appareils."],
+  ["Novembre","Premières versions : Jour, Devoirs, Tâches, Objectifs et Brouillon."]
+];
+var setOpen={};
+function sIcon(k,cls){return '<span class="si'+(cls?" "+cls:"")+'"><svg viewBox="0 0 24 24" aria-hidden="true">'+IC[k]+'</svg></span>';}
+function sRow(act,icon,label,opt){
+  opt=opt||{};
+  var sw=opt.sw!==undefined, attrs=sw?' role="switch" aria-checked="'+(!!opt.sw)+'"':(opt.exp!==undefined?' aria-expanded="'+(!!opt.exp)+'"':"");
+  return '<button type="button" class="srow'+(opt.danger?" danger":"")+'" data-act="'+act+'"'+attrs+'>'+sIcon(icon,opt.danger?"red":"")+
+    '<span class="sl">'+esc(label)+(opt.sub?'<small>'+esc(opt.sub)+'</small>':"")+'</span>'+
+    (opt.val!==undefined?'<span class="sv">'+esc(String(opt.val))+'</span>':"")+
+    (sw?'<span class="sw" aria-hidden="true"><i></i></span>':opt.noChev?"":CHEV)+'</button>';
+}
+function sGroup(label,rows,note){return '<section class="sgroup">'+(label?'<h3 class="slab">'+esc(label)+'</h3>':"")+'<div class="slist">'+rows+'</div>'+(note?'<p class="snote">'+note+'</p>':"")+'</section>';}
+function standalone(){try{return navigator.standalone===true||matchMedia("(display-mode: standalone)").matches;}catch(e){return false;}}
+function isIOS(){return /iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);}
+function badgeOff(){try{return localStorage.getItem("closer-badge-off")==="1";}catch(e){return false;}}
+function longestRun(days){
+  var l=days.slice().sort(),best=0,run=0,prev="";
+  l.forEach(function(d){run=(prev&&shift(prev,1)===d)?run+1:(prev===d?run:1);prev=d;if(run>best)best=run;});
+  return best;
+}
+function myStats(){
+  var t=today(),m=t.slice(0,7),tasks=byKind("task"),goals=byKind("goal");
+  var done=tasks.filter(function(x){return x.d.done&&String(x.d.doneOn||"").slice(0,7)===m;}).length;
+  var best=0;byKind("daily").forEach(function(x){best=Math.max(best,longestRun(histOf(x.d)));});
+  var seances=byKind("weekly").reduce(function(n,x){return n+weekCount(x.d);},0);
+  return {done:done,month:new Date().toLocaleDateString("fr-FR",{month:"long"}),best:best,goalsOk:goals.filter(function(x){return x.d.reached;}).length,goals:goals.length,notes:byKind("note").length,seances:seances};
+}
 function acHTML(){
-  var h='<div class="sh-head"><button type="button" class="btn ghost small" data-act="close-sheet">Fermer</button><h2 id="sh-h">'+(acOn()?"Compte":"Mes données")+'</h2><span style="width:78px"></span></div>';
+  var h='<div class="sh-head"><button type="button" class="btn ghost small" data-act="close-sheet">Fermer</button><h2 id="sh-h">Réglages</h2><span style="width:78px"></span></div>';
+
+  /* 1. Compte */
   if(!acOn()){}
   else if(!SB){h+='<div class="acbox">'+(sbTried?"Compte indisponible pour le moment (pas de connexion internet ?). Tes données restent sur cet appareil.":"Chargement…")+'</div>';}
   else if(SU&&AS.step==="newpw"){
-    h+='<div class="hint" style="margin-top:0">Choisis ton nouveau mot de passe.</div>'+pwField("new-password","Nouveau mot de passe",1)+
-      '<div class="stack"><button type="submit" class="btn">Enregistrer le mot de passe</button><button type="button" class="btn ghost" data-act="ac-back">Annuler</button></div>';
+    h+='<section class="sgroup"><h3 class="slab">Nouveau mot de passe</h3>'+pwField("new-password","Nouveau mot de passe",1)+
+      '<div class="stack"><button type="submit" class="btn">Enregistrer le mot de passe</button><button type="button" class="btn ghost" data-act="ac-back">Annuler</button></div></section>';
   }else if(SU){
-    var st=cst===1?"✓ Synchronisé"+(lastOk?" à "+hm(lastOk):""):cst===3?"Synchronisation…":cst===2?(syncErr==="session expirée"?"Session expirée : déconnecte-toi puis reconnecte-toi.":"Synchronisation en échec ("+esc(syncErr||"erreur inconnue")+") : nouvel essai automatique."):"";
-    h+='<div class="acbox">Connecté : <b>'+esc(SU.email||"")+'</b><br><span style="color:var(--muted)">'+st+'</span></div>'+
-      '<div class="hint" style="margin-top:0">Tes éléments sont enregistrés sur ton compte et sur cet appareil. Connecte-toi sur un autre appareil pour les y retrouver.</div>'+
-      '<div class="stack"><button type="button" class="btn" data-act="ac-sync">Synchroniser maintenant</button><button type="button" class="btn ghost" data-act="ac-chpw">Changer de mot de passe</button><button type="button" class="btn ghost" data-act="ac-out">Se déconnecter</button></div>'+
-      '<div><button type="button" class="btn danger small" data-act="ac-del">'+(acq?"Confirmer : supprimer le compte et ses données en ligne":"Supprimer mon compte")+'</button></div>';
+    var st=cst===1?"Connecté · synchronisé"+(lastOk?" à "+hm(lastOk):""):cst===3?"Connecté · synchronisation…":cst===2?(syncErr==="session expirée"?"Session expirée : déconnecte-toi puis reconnecte-toi":"Synchro en échec ("+(syncErr||"erreur inconnue")+") · nouvel essai automatique"):"Connecté";
+    var em=String(SU.email||"");
+    h+='<div class="prof"><span class="av" aria-hidden="true">'+esc((em[0]||"?").toUpperCase())+'</span><span class="pi"><span class="pe">'+esc(em)+'</span>'+
+      '<span class="ps"><i class="acdot'+(cst===1?" ok":cst===2?" err":"")+'"></i>'+esc(st)+'</span></span>'+
+      '<button type="button" class="icon" data-act="ac-sync" aria-label="Synchroniser maintenant"><svg viewBox="0 0 24 24" aria-hidden="true" class="'+(cst===3?"spin":"")+'">'+IC.sync+'</svg></button></div>';
   }else if(AS.step==="signup"){
-    h+='<div class="hint" style="margin-top:0">Crée ton compte : tu recevras un e-mail pour confirmer ton adresse.</div>'+emField()+pwField("new-password","8 caractères minimum",1)+
-      '<div class="stack"><button type="submit" class="btn">Créer mon compte</button><button type="button" class="btn ghost" data-act="ac-tologin">J\'ai déjà un compte</button></div>';
+    h+='<section class="sgroup"><h3 class="slab">Créer un compte</h3><p class="snote" style="margin:0 0 4px">Tu recevras un e-mail pour confirmer ton adresse.</p>'+emField()+pwField("new-password","8 caractères minimum",1)+
+      '<div class="stack"><button type="submit" class="btn">Créer mon compte</button><button type="button" class="btn ghost" data-act="ac-tologin">J\'ai déjà un compte</button></div></section>';
   }else{
-    h+='<div class="hint" style="margin-top:0">Facultatif : connecte-toi pour retrouver tes éléments sur tous tes appareils. Sans compte, ils restent sur cet appareil.</div>'+emField()+pwField("current-password","Mot de passe")+
-      '<div class="stack"><button type="submit" class="btn">Se connecter</button><button type="button" class="btn ghost" data-act="ac-tosignup">Créer un compte</button><button type="button" class="btn ghost" data-act="ac-forgot">Mot de passe oublié ?</button></div>';
+    h+='<section class="sgroup"><h3 class="slab">Compte</h3><p class="snote" style="margin:0 0 4px">Facultatif : connecte-toi pour retrouver tes éléments sur tous tes appareils. Sans compte, ils restent sur cet appareil.</p>'+emField()+pwField("current-password","Mot de passe")+
+      '<div class="stack"><button type="submit" class="btn">Se connecter</button><button type="button" class="btn ghost" data-act="ac-tosignup">Créer un compte</button><button type="button" class="btn ghost" data-act="ac-forgot">Mot de passe oublié ?</button></div></section>';
   }
   if(AS.msg)h+='<div class="acbox" role="status">'+esc(AS.msg)+'</div>';
   if(AS.unconf&&!SU)h+='<div><button type="button" class="btn ghost small" data-act="ac-resend">Renvoyer l\'e-mail de confirmation</button></div>';
-  var perm=("Notification" in window)?Notification.permission:"";
-  h+='<div class="field" style="margin-top:8px"><span class="lab">Mes données</span></div><div class="stack">'+
-    '<button type="button" class="btn ghost" data-act="backup">Exporter ou importer une sauvegarde</button>'+
-    (badgeOk()&&perm&&perm!=="granted"&&perm!=="denied"?'<button type="button" class="btn ghost" data-act="badge-on">Afficher le nombre restant sur l\'icône</button>':"")+'</div>'+
-    (badgeOk()&&perm==="granted"?'<div class="hint" style="margin-top:0">Pastille sur l\'icône : activée.</div>':"")+
-    (badgeOk()&&perm&&perm!=="granted"&&perm!=="denied"?'<div class="hint" style="margin-top:0">Sur iPhone, la pastille marche quand Closer est ajouté à l\'écran d\'accueil.</div>':"");
-  if(!acOn())return h+'<div class="hint" style="text-align:center">Version '+APPV+'</div>';
-  h+='<div class="field" style="margin-top:8px"><span class="lab">À propos</span></div><div class="stack">'+
-    (CONTACT?'<button type="button" class="btn ghost" data-act="ac-avis">Donner mon avis</button>':"")+
-    '<button type="button" class="btn ghost" data-act="ac-stats">Statistiques anonymes : '+(statsOff()?"désactivées":"activées")+'</button>'+
-    '<button type="button" class="btn ghost" data-act="ac-priv">'+(showPriv?"Masquer la confidentialité":"Confidentialité")+'</button></div>';
-  if(showPriv)h+='<div class="acbox"><b>Sans compte</b>, tout reste sur ton appareil.<br><br><b>Avec un compte</b>, sont stockés en ligne : ton adresse e-mail et tes éléments (tâches, devoirs, habitudes, objectifs, notes). Hébergement : Supabase (Europe).<br><br><b>Utilisation</b> : uniquement pour te connecter et synchroniser tes appareils. Pas de publicité, pas de revente.<br><br><b>Accès</b> : chaque compte ne peut lire que ses propres données.<br><br><b>Statistiques anonymes</b> : un identifiant tiré au hasard sur l\'appareil, sans lien avec ton compte ni ton contenu, et seulement 4 événements (ouverture du jour, premier élément, journée active, compte créé). Désactivables ci-dessus.<br><br><b>Suppression</b> : « Supprimer mon compte » efface immédiatement ton compte et tes données en ligne.'+(CONTACT?'<br><br><b>Contact</b> : '+esc(CONTACT):"")+'</div>';
-  h+='<div class="hint" style="text-align:center">Version '+APPV+'</div>';
+
+  /* 2. Statistiques */
+  var S=myStats();
+  h+='<section class="sgroup"><h3 class="slab">Tes statistiques</h3><div class="stats">'+
+    '<div class="stat hl"><b>'+S.done+'</b><span>'+(S.done>1?"tâches faites":"tâche faite")+' en '+esc(S.month)+'</span></div>'+
+    '<div class="stat"><b>'+(S.best||"–")+'</b><span>'+(S.best>1?"jours d'affilée, ta meilleure série":"meilleure série d'habitude")+'</span></div>'+
+    '<div class="stat"><b>'+S.goalsOk+'<small> / '+S.goals+'</small></b><span>objectifs atteints</span></div>'+
+    '<div class="stat"><b>'+S.seances+'</b><span>'+(S.seances>1?"séances":"séance")+' cette semaine</span></div>'+
+    '</div></section>';
+
+  /* 3. Préférences */
+  var perm=("Notification" in window)?Notification.permission:"", rows="";
+  rows+=sRow("set-cats","tag","Catégories de tâches",{val:cats().length});
+  rows+=sRow("set-folders","folder","Dossiers du Brouillon",{val:nFolders().length});
+  if(badgeOk())rows+=perm==="denied"?sRow("set-badge","badge","Pastille sur l'icône",{sub:"Refusée : réactive les notifications de Closer dans les réglages du téléphone",noChev:true}):sRow("set-badge","badge","Pastille sur l'icône",{sub:"Le nombre de choses restantes sur l'icône",sw:perm==="granted"&&!badgeOff()});
+  if(acOn())rows+=sRow("ac-stats","chart","Statistiques anonymes",{sub:statsOff()?"désactivées":"activées · aucun contenu envoyé",sw:!statsOff()});
+  h+=sGroup("Préférences",rows);
+
+  /* 4. Écran d'accueil */
+  if(!standalone()){
+    var steps=isIOS()?["Touche le bouton Partager de Safari (le carré avec une flèche vers le haut).","Fais défiler et choisis « Sur l'écran d'accueil ».","Touche « Ajouter » : Closer s'ouvre alors comme une vraie appli, en plein écran."]
+      :["Safari sur Mac : menu Fichier › « Ajouter au Dock ».","Chrome ou Edge : menu ⋮ › « Installer Closer » (ou l'icône dans la barre d'adresse).","Closer s'ouvre alors dans sa propre fenêtre."];
+    h+=sGroup("",sRow("set-a2hs","home","Ajouter Closer à l'écran d'accueil",{sub:"Plein écran, pastille sur l'icône",exp:!!setOpen.a2hs})+
+      (setOpen.a2hs?'<ol class="sdetail">'+steps.map(function(x){return '<li>'+esc(x)+'</li>';}).join("")+'</ol>':""));
+  }
+
+  /* 5. Mes données */
+  h+=sGroup("Mes données",sRow("backup","data","Exporter ou importer une sauvegarde",{sub:state.items.size+(state.items.size>1?" éléments":" élément")+(SU?" · synchronisés sur ton compte":" · sur cet appareil")}));
+
+  /* 6. Sécurité */
+  if(acOn()&&SB&&SU&&AS.step!=="newpw"){
+    h+=sGroup("Sécurité",sRow("ac-chpw","key","Changer de mot de passe")+sRow("ac-out","out","Se déconnecter",{sub:"Tes éléments restent sur cet appareil",noChev:true})+
+      sRow("ac-del","trash",acq?"Confirmer : supprimer le compte et ses données en ligne":"Supprimer mon compte",{danger:true,noChev:true}),
+      acq?"Touche encore pour confirmer. Les éléments déjà sur cet appareil y restent.":"");
+  }
+
+  /* 7. À propos */
+  rows=sRow("set-news","news","Quoi de neuf",{exp:!!setOpen.news,sub:"Les dernières nouveautés de Closer"});
+  if(setOpen.news)rows+='<ul class="sdetail news">'+NEWS.map(function(n){return '<li><b>'+esc(n[0])+'</b>'+esc(n[1])+'</li>';}).join("")+'</ul>';
+  if(CONTACT)rows+=sRow("ac-avis","mail","Donner mon avis",{sub:"Un e-mail prérempli"});
+  if(acOn()){rows+=sRow("ac-priv","shield","Confidentialité",{exp:showPriv});
+    if(showPriv)rows+='<div class="sdetail"><b>Sans compte</b>, tout reste sur ton appareil.<br><br><b>Avec un compte</b>, sont stockés en ligne : ton adresse e-mail et tes éléments (tâches, devoirs, habitudes, objectifs, notes). Hébergement : Supabase (Europe).<br><br><b>Utilisation</b> : uniquement pour te connecter et synchroniser tes appareils. Pas de publicité, pas de revente.<br><br><b>Accès</b> : chaque compte ne peut lire que ses propres données.<br><br><b>Statistiques anonymes</b> : un identifiant tiré au hasard sur l\'appareil, sans lien avec ton compte ni ton contenu, et seulement 4 événements (ouverture du jour, premier élément, journée active, compte créé). Désactivables ci-dessus.</div>';}
+  h+=sGroup("À propos",rows);
+  h+='<p class="snote" style="text-align:center">Closer · version '+APPV+'</p>';
   return h;
 }
 function acRefresh(){

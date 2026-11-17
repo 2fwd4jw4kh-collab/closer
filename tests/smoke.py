@@ -129,7 +129,7 @@ with sync_playwright() as p:
     pg.reload(); pg.wait_for_timeout(500)
     check('sans compte : la tâche reste après rechargement', items(pg) == ['Tâche locale'])
     pg.click('#ac-btn'); pg.wait_for_timeout(450)
-    check('sans réglage : le bouton du haut ouvre « Mes données » avec la sauvegarde', pg.is_visible('#sheet [data-act="backup"]') and 'Mes données' in pg.inner_text('#sh-h'))
+    check('sans réglage : le rouage ouvre « Réglages » avec la sauvegarde', pg.is_visible('#sheet [data-act="backup"]') and 'Réglages' in pg.inner_text('#sh-h'))
     pg.click('#sheet [data-act="close-sheet"]'); pg.wait_for_timeout(450)
     check('sans réglage : aucune erreur', not errs)
     c.close()
@@ -198,6 +198,17 @@ with sync_playwright() as p:
     check('Compte › Sauvegarde : texte adapté au compte connecté', 'synchronisés sur ton compte' in pa.inner_text('#sheet'))
     pa.click('#sheet [data-act="ac-open"]'); pa.wait_for_timeout(250)
     check('« Retour » ramène à la fiche Compte', pa.is_visible('#sheet [data-act="ac-sync"]'))
+    pa.keyboard.press('Escape'); pa.wait_for_timeout(400)
+
+    # 6 quater. Réglages : statistiques, préférences, Quoi de neuf, Catégories avec retour
+    open_account(pa)
+    check('Réglages : statistiques affichées', 'Tes statistiques' in pa.inner_text('#sheet') and 'objectifs atteints' in pa.inner_text('#sheet'))
+    pa.click('#sheet [data-act="set-news"]'); pa.wait_for_timeout(150)
+    check('Réglages : « Quoi de neuf » se déplie', 'Brouillon façon Notes' in pa.inner_text('#sheet'))
+    pa.click('#sheet [data-act="set-cats"]'); pa.wait_for_timeout(200)
+    check('Réglages › Catégories, puis « Retour »', 'Catégories' in pa.inner_text('#sh-h'))
+    pa.click('#sheet [data-act="ac-open"]'); pa.wait_for_timeout(200)
+    check('retour aux Réglages', 'Réglages' in pa.inner_text('#sh-h'))
     pa.keyboard.press('Escape'); pa.wait_for_timeout(400)
 
     # 7. Suppression du compte
