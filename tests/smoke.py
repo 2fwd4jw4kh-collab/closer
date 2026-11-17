@@ -205,6 +205,21 @@ with sync_playwright() as p:
     check('compte supprimé, données en ligne effacées', not ROWS and 'Compte supprimé' in pa.inner_text('#sheet'))
     a.close(); bb.close()
 
+    # 7 ter. Les chiffres concordent : carte noire = Reste à faire + Habitudes du jour
+    c, pg, errs = device(cfg=False)
+    pg.evaluate("""()=>{const t=new Date(),z=n=>String(n).padStart(2,'0'),d=t.getFullYear()+'-'+z(t.getMonth()+1)+'-'+z(t.getDate());
+      localStorage.setItem('cap-items-v1',JSON.stringify([
+        ['a',{kind:'task',title:'Tâche',cat:'Perso',due:d,done:false,created:1}],
+        ['b',{kind:'daily',title:'Lire',lastDone:'',streak:0,created:2}],
+        ['c',{kind:'daily',title:'Anglais',lastDone:'',streak:0,created:3}],
+        ['d',{kind:'weekly',title:'Musculation',target:3,dones:[],created:4}]]));}""")
+    pg.reload(); pg.wait_for_timeout(600)
+    hero = int(pg.inner_text('#hero .num'))
+    heads = pg.eval_on_selector_all('#l-jour .sh', "els=>els.map(e=>e.innerText)")
+    nums = sum(int(''.join(ch for ch in h.split('\n')[-1] if ch.isdigit()) or 0) for h in heads if h.startswith(('Reste','Habitudes')))
+    check('carte noire = Reste à faire + Habitudes du jour (%d = %d)' % (hero, nums), hero == nums == 3)
+    c.close()
+
     # 7 bis. Geste iOS : glisser la fiche vers le bas la ferme ; un petit glissement lent la laisse ouverte
     c, pg, errs = device(cfg=False)
     cdp = c.new_cdp_session(pg)

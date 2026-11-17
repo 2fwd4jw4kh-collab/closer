@@ -511,8 +511,9 @@ function renderJour(){
       ? tRest.map(function(x){return taskRow(x,true);}).join("")
       : '<div class="empty">'+(state.mode==="loading"?"Chargement…":(total?"Tout est fait pour aujourd'hui.":"Rien pour l'instant."))+'</div>');
     if(hasHab){
-      var hLeft=dRest.length+wk.filter(function(x){return weekCount(x.d)<(x.d.target||1);}).length;
-      html+=block("Habitudes",hLeft?hLeft+" à faire":"Tout est fait",dRest.map(dailyRow).concat(wk.map(weeklyRow)).join(""));
+      // même compte que la carte noire : les habitudes du jour ; les hebdomadaires affichent leur propre « n sur x cette semaine »
+      var hLeft=dRest.length;
+      html+=block("Habitudes",hLeft?hLeft+" aujourd'hui":(dailies.length?"Faites aujourd'hui":""),dRest.map(dailyRow).concat(wk.map(weeklyRow)).join(""));
     }
     var und=tasks.filter(function(x){return !x.d.done&&!isDate(x.d.due);}).sort(sortTasks);
     if(und.length)html+=block("Sans date, à caser",und.length,und.map(function(x){return taskRow(x,true);}).join(""));
@@ -1031,7 +1032,7 @@ function localMode(note){
 }
 
 /* ---------- version, mises à jour ---------- */
-var APPV="2026-11-17.2";
+var APPV="2026-11-17.3";
 /* 4. bouton + : se range au défilement vers le bas */
 (function(){var y=window.scrollY,f=document.getElementById("fab");
   addEventListener("scroll",function(){var n=window.scrollY,d=n-y;
