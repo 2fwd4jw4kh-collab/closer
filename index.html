@@ -14,10 +14,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Closer">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="preload" href="fonts/schibsted-grotesk.woff2" as="font" type="font/woff2" crossorigin>
 <style>
+@font-face{font-family:"Schibsted Grotesk";font-style:normal;font-display:swap;font-weight:400 900;src:url(fonts/schibsted-grotesk.woff2) format("woff2")}
 /* Direction : relevé de compte. Une seule famille, noir sur blanc, un bloc noir
    qui porte le "solde" de la journée ; tout le reste se tait.
    Colonne unique alignée à gauche. On lit d'abord, on ajoute ensuite (bouton + unique, fiche d'édition).
@@ -242,6 +241,19 @@ input,textarea,select{font-size:16px}
 /* 4. le bouton + s'efface quand on fait défiler vers le bas, revient vers le haut */
 .fab{transition:transform 220ms var(--ease-out),opacity 180ms ease}
 .fab.away{transform:translateY(calc(100% + 96px));opacity:0;pointer-events:none}
+
+/* puces discrètes, liens, historique des habitudes */
+.chip.quiet{background:transparent;text-decoration:underline;text-underline-offset:3px}
+.linkbtn{background:none;border:0;padding:6px 0;color:var(--muted);font-weight:600;font-size:14px;text-decoration:underline;text-underline-offset:3px}
+.hab{display:flex;flex-direction:column;gap:10px;padding:14px 16px;border-top:1px solid var(--line)}
+.hab:first-child{border-top:0}
+.hab .body{padding:0;text-align:left}
+.hab .grid{display:flex;gap:8px}
+.hab .grid .wk{flex:1;display:flex;gap:3px}
+.hab .grid i{flex:1;height:14px;border-radius:3px;background:var(--line)}
+.hab .grid i.on{background:var(--ink)}
+.hab .grid i.fut{opacity:.35}
+.hab .grid i.now{box-shadow:inset 0 0 0 1.5px var(--ink)}
 </style>
 </head>
 <body>
@@ -249,7 +261,7 @@ input,textarea,select{font-size:16px}
 <div class="app" id="app">
   <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
     <div class="brand">Closer</div>
-    <div style="display:flex;gap:8px"><button type="button" class="btn ghost small" data-act="ac-open" id="ac-btn" hidden>Compte<i class="acdot" id="ac-dot"></i></button><button type="button" class="btn ghost small" data-act="backup">Sauvegarde</button></div>
+    <button type="button" class="btn ghost small" data-act="ac-open" id="ac-btn">Compte<i class="acdot" id="ac-dot"></i></button>
   </div>
   <div class="note" id="note" hidden></div>
 
@@ -261,19 +273,20 @@ input,textarea,select{font-size:16px}
 
   <main id="v-devoirs" class="view" hidden>
     <h1>Devoirs</h1>
-    <div class="chips" id="chips-hw" role="group" aria-label="Filtrer par matière"></div>
+    <div class="chips scroll" id="chips-hw" role="group" aria-label="Filtrer par matière"></div>
     <div id="l-hw" class="view"></div>
   </main>
 
   <main id="v-taches" class="view" hidden>
     <h1>Tâches</h1>
-    <div class="chips" id="chips" role="group" aria-label="Filtrer par catégorie"></div>
+    <div class="chips scroll" id="chips" role="group" aria-label="Filtrer par catégorie"></div>
     <div id="l-tasks" class="view"></div>
   </main>
 
   <main id="v-objectifs" class="view" hidden>
     <h1>Objectifs</h1>
     <div id="l-goals" style="display:flex;flex-direction:column;gap:12px"></div>
+    <div id="l-habits"></div>
   </main>
 
   <main id="v-brouillon" class="view" hidden>
@@ -321,7 +334,7 @@ var KIND_HINT={
 
 var state={items:new Map(),filter:"Tout",subj:"Tout",day:"",showDone:{taches:false,devoirs:false},arr:{taches:false,devoirs:false},mode:"loading",note:""};
 var dirty={}, noteTimers={}, lastNoteIds=null;
-var col=null, chains={}, lastDeleted=null, toastTimer=null, focusAfter=null;
+var lastDeleted=null, toastTimer=null, focusAfter=null;
 var sheet=null, opener=null, orderGroups={};
 var prevPct={}, prevDone=null, curView=null, EASE="cubic-bezier(0.23,1,0.32,1)";
 var reduce=window.matchMedia?window.matchMedia("(prefers-reduced-motion: reduce)"):{matches:false};
@@ -340,7 +353,6 @@ function fmt(s,opt){return parse(s).toLocaleDateString("fr-FR",opt||{weekday:"sh
 
 /* ---------- stockage ---------- */
 function newId(){
-  if(col){try{return col.doc().id;}catch(e){}}
   return "l"+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 }
 function persistLocal(){
@@ -348,22 +360,13 @@ function persistLocal(){
   try{localStorage.setItem(LS_KEY,JSON.stringify(Array.from(state.items.entries())));}catch(e){}
   schedSync(1500);
 }
-function writeFailed(e){
-  var code=e&&e.code;
-  state.note=code==="quota_exceeded"
-    ? "Espace de stockage plein : supprime des éléments terminés pour pouvoir en ajouter."
-    : "Une modification n'a pas pu être enregistrée. Vérifie ta connexion puis réessaie.";
-  render();
-}
 function put(id,data){
   state.items.set(id,data);
-  if(col){chains[id]=(chains[id]||Promise.resolve()).then(function(){return col.doc(id).set(data);}).catch(writeFailed);}
 }
 function save(id,data){var isNew=!state.items.has(id);put(id,data);persistLocal();render();if(isNew&&data&&data.kind&&data.kind!=="prefs")stat1("first_item");}
 function remove(id){
   clearTimeout(noteTimers[id]);delete dirty[id];
   state.items.delete(id);persistLocal();render();
-  if(col){chains[id]=(chains[id]||Promise.resolve()).then(function(){return col.doc(id).delete();}).catch(writeFailed);}
 }
 function get(id){var d=state.items.get(id);if(!d)return null;var c=Object.assign({},d);if(Array.isArray(d.steps))c.steps=d.steps.map(function(s){return Object.assign({},s);});return c;}
 function byKind(k){var out=[];state.items.forEach(function(d,id){if(d&&d.kind===k)out.push({id:id,d:d});});out.sort(function(a,b){return (a.d.created||0)-(b.d.created||0);});return out;}
@@ -420,7 +423,7 @@ function dailyRow(x){
   var on=x.d.lastDone===today(), s=streakOf(x.d), ti=cap(x.d.title);
   return '<div class="row'+(on?" done":"")+'">'+checkBtn("daily",x.id,on,(on?"Décocher : ":"Cocher : ")+ti,"","round")+
     '<button type="button" class="body" data-act="edit" data-id="'+esc(x.id)+'" aria-label="Modifier : '+esc(ti)+'">'+
-    '<span class="title">'+esc(ti)+'</span><span class="meta"><span>Chaque jour</span>'+(s>1?'<span class="credit">'+s+' jours de suite</span>':"")+'</span></button></div>';
+    '<span class="title">'+esc(ti)+'</span>'+(s>1?'<span class="meta"><span class="credit">'+s+' jours de suite</span></span>':"")+'</button></div>';
 }
 function prioSort(a,b){
   if(!!a.d.prio!==!!b.d.prio)return a.d.prio?-1:1;
@@ -454,6 +457,14 @@ function block(title,count,rowsHtml,cls){
   return '<section class="block"><div class="sh"><h2 class="'+(cls||"")+'">'+esc(title)+'</h2><span class="n">'+count+'</span></div><div class="list">'+rowsHtml+'</div></section>';
 }
 
+/* ---------- pastille sur l'icône (appli ajoutée à l'écran d'accueil) ---------- */
+var badgeLast=-1;
+function badgeOk(){return "setAppBadge" in navigator;}
+function setBadge(n){
+  if(!badgeOk()||n===badgeLast)return;badgeLast=n;
+  try{(n?navigator.setAppBadge(n):navigator.clearAppBadge()).catch(function(){});}catch(e){}
+}
+
 /* ---------- Jour ---------- */
 function renderJour(){
   var t=today();
@@ -476,6 +487,7 @@ function renderJour(){
     h+='<div class="segs" role="img" aria-label="'+done+' sur '+total+' faites">'+segs+'</div>';
   }
   $("hero").innerHTML=h;
+  if(state.mode!=="loading")setBadge(rest);
   if(prevDone!==null&&done>prevDone&&total&&total<=40&&!reduce.matches){
     var seg=$("hero").querySelectorAll(".segs i")[done-1];
     if(seg&&seg.animate)seg.animate([{transform:"scaleY(.35)",opacity:.35},{transform:"none",opacity:1}],{duration:260,easing:EASE});
@@ -493,13 +505,14 @@ function renderJour(){
 
   var html="";
   if(state.day===t){
-    html+=block("Reste à faire",rest||"",rest
-      ? dRest.map(dailyRow).concat(tRest.map(function(x){return taskRow(x,true);})).join("")
-      : '<div class="empty">'+(state.mode==="loading"?"Chargement…":(total?"Tout est fait pour aujourd'hui.":"Rien pour l'instant."))+'</div>');
     var wk=byKind("weekly").sort(function(a,b){return (weekCount(a.d)>=(a.d.target||1)?1:0)-(weekCount(b.d)>=(b.d.target||1)?1:0);});
-    if(wk.length){
-      var wLeft=wk.reduce(function(n,x){return n+Math.max(0,(x.d.target||1)-weekCount(x.d));},0);
-      html+=block("Cette semaine",wLeft?wLeft+(wLeft>1?" séances restantes":" séance restante"):"Tout est fait",wk.map(weeklyRow).join(""));
+    var hasHab=dRest.length||wk.length;
+    if(tRest.length||!hasHab)html+=block("Reste à faire",tRest.length||"",tRest.length
+      ? tRest.map(function(x){return taskRow(x,true);}).join("")
+      : '<div class="empty">'+(state.mode==="loading"?"Chargement…":(total?"Tout est fait pour aujourd'hui.":"Rien pour l'instant."))+'</div>');
+    if(hasHab){
+      var hLeft=dRest.length+wk.filter(function(x){return weekCount(x.d)<(x.d.target||1);}).length;
+      html+=block("Habitudes",hLeft?hLeft+" à faire":"Tout est fait",dRest.map(dailyRow).concat(wk.map(weeklyRow)).join(""));
     }
     var und=tasks.filter(function(x){return !x.d.done&&!isDate(x.d.due);}).sort(sortTasks);
     if(und.length)html+=block("Sans date, à caser",und.length,und.map(function(x){return taskRow(x,true);}).join(""));
@@ -532,7 +545,7 @@ function viewTasks(v){
 function renderTaches(){
   var cl=allCats();
   if(state.filter!=="Tout"&&cl.indexOf(state.filter)<0)state.filter="Tout";
-  $("chips").innerHTML=chipsHtml("filter",["Tout"].concat(cl))+'<button type="button" class="chip" data-act="cats">Gérer les catégories</button>';
+  $("chips").innerHTML=chipsHtml("filter",["Tout"].concat(cl))+'<button type="button" class="chip quiet" data-act="cats">Gérer</button>';
   renderTaskView("taches","l-tasks","Aucune tâche en cours. Touche + pour noter la prochaine.");
 }
 function renderDevoirs(){
@@ -624,9 +637,34 @@ function renderObjectifs(){
       }).join("")+'</div>':"")+
       (lk.length?'<div class="linked"><h3>Ce qui le fait avancer</h3>'+lk.join("")+'</div>':"")+
       '<form class="addstep" data-goal="'+esc(g.id)+'"><input type="text" id="step-in-'+esc(g.id)+'" placeholder="Ajouter une étape" aria-label="Nouvelle étape pour '+esc(ti)+'" maxlength="200" autocapitalize="sentences"><button class="btn ghost small" type="submit">Ajouter</button></form>'+
-      '<div><button type="button" class="btn ghost small" data-act="reach" data-id="'+esc(g.id)+'">'+(d.reached?"Rouvrir l'objectif":"Marquer comme atteint")+'</button></div>'+
+      '<div><button type="button" class="linkbtn" data-act="reach" data-id="'+esc(g.id)+'">'+(d.reached?"Rouvrir l'objectif":"Marquer comme atteint")+'</button></div>'+
       '</article>';
   }).join("");
+}
+
+/* ---------- Habitudes : 4 dernières semaines ---------- */
+function histOf(d){
+  var l=(d.dones||[]).slice();
+  // anciennes habitudes sans historique : on reconstitue la série en cours
+  if(d.kind==="daily"&&isDate(d.lastDone)){for(var i=0;i<(d.streak||1);i++){var x=shift(d.lastDone,-i);if(l.indexOf(x)<0)l.push(x);}}
+  return l;
+}
+function renderHabits(){
+  var hs=byKind("daily").concat(byKind("weekly")), el=$("l-habits");
+  if(!hs.length){el.innerHTML="";return;}
+  var t=today(), ws=weekStart(t), first=shift(ws,-21);
+  el.innerHTML='<section class="block"><div class="sh"><h2>Habitudes</h2><span class="n">4 dernières semaines</span></div><div class="list">'+hs.map(function(x){
+    var d=x.d, h=histOf(d), cells="", n=0;
+    for(var i=0;i<28;i++){var day=shift(first,i), on=h.indexOf(day)>=0, fut=day>t;if(on&&!fut)n++;
+      if(i%7===0)cells+=(i?'</span>':'')+'<span class="wk">';
+      cells+='<i class="'+(on?"on":"")+(fut?" fut":"")+(day===t?" now":"")+'"></i>';}
+    cells+='</span>';
+    var meta=d.kind==="daily"
+      ? (streakOf(d)>1?'<span class="credit">'+streakOf(d)+' jours de suite</span>':'<span>Chaque jour</span>')+'<span>'+n+' jours sur 28</span>'
+      : '<span>'+(d.target||1)+' fois par semaine</span><span>'+weekCount(d)+' sur '+(d.target||1)+' cette semaine</span>';
+    return '<div class="hab"><button type="button" class="body" data-act="edit" data-id="'+esc(x.id)+'" aria-label="Modifier : '+esc(cap(d.title))+'"><span class="title">'+esc(cap(d.title))+'</span><span class="meta">'+meta+'</span></button>'+
+      '<div class="grid" role="img" aria-label="'+n+' fois sur les 4 dernières semaines">'+cells+'</div></div>';
+  }).join("")+'</div></section>';
 }
 function animateFills(){
   document.querySelectorAll(".fill[data-gid]").forEach(function(el){
@@ -657,8 +695,7 @@ function renderBrouillon(){
 function flushNote(id){
   clearTimeout(noteTimers[id]);
   var data=dirty[id];if(!data)return;
-  if(!col){delete dirty[id];return;}
-  chains[id]=(chains[id]||Promise.resolve()).then(function(){return col.doc(id).set(data);}).then(function(){if(dirty[id]===data)delete dirty[id];}).catch(writeFailed);
+  delete dirty[id];
 }
 function newNote(){
   var empty=byKind("note").filter(function(n){return !(n.d.text||"").trim();})[0];
@@ -706,8 +743,8 @@ function renderSheet(){
   if(k==="account"){$("sheet").innerHTML=acHTML();return;}
   if(k==="backup"){
     var last="";try{last=localStorage.getItem("closer-last-export")||"";}catch(e){}
-    h='<div class="sh-head"><button type="button" class="btn ghost small" data-act="close-sheet">Fermer</button><h2 id="sh-h">Sauvegarde</h2><span style="width:78px"></span></div>'+
-      '<div class="hint" style="margin-top:0">Tes données sont enregistrées dans ce navigateur, sur cet appareil uniquement. Vider les données du navigateur les efface : exporte une sauvegarde de temps en temps.</div>'+
+    h='<div class="sh-head"><button type="button" class="btn ghost small" data-act="ac-open">Retour</button><h2 id="sh-h">Sauvegarde</h2><span style="width:78px"></span></div>'+
+      '<div class="hint" style="margin-top:0">'+(typeof SU!=="undefined"&&SU?"Tes éléments sont synchronisés sur ton compte. Une sauvegarde exportée en est une copie de secours en plus, à garder où tu veux.":"Tes données sont enregistrées dans ce navigateur, sur cet appareil uniquement. Vider les données du navigateur les efface : exporte une sauvegarde de temps en temps.")+'</div>'+
       '<div class="stack"><button type="button" class="btn" data-act="export">Exporter mes données</button>'+
       '<label class="btn ghost filebtn">Importer une sauvegarde<input type="file" id="sh-import" accept=".json,application/json"></label></div>'+
       '<div class="hint" style="margin-top:0">'+(dr.msg?esc(dr.msg):(isDate(last)?"Dernier export le "+esc(fmt(last,{day:"numeric",month:"long",year:"numeric"}))+".":"Aucun export pour l\'instant."))+'</div>'+
@@ -818,7 +855,7 @@ function render(){
   var a=document.activeElement, keep=null;
   if(a&&a.id&&!a.closest(".sheet")&&((a.tagName==="INPUT"&&a.type==="text")||a.tagName==="TEXTAREA"))keep={id:a.id,v:a.value,s:a.selectionStart,e:a.selectionEnd};
   var n=$("note");n.hidden=!state.note;n.textContent=state.note;
-  renderJour();renderDevoirs();renderTaches();renderObjectifs();renderBrouillon();animateFills();
+  renderJour();renderDevoirs();renderTaches();renderObjectifs();renderHabits();renderBrouillon();animateFills();
   var fid=focusAfter||(keep&&keep.id);focusAfter=null;
   if(fid){var el=$(fid);if(el&&el!==document.activeElement){el.focus();if(keep&&keep.id===fid){if(!el.value)el.value=keep.v;try{el.setSelectionRange(keep.s,keep.e);}catch(e){}}}}
 }
@@ -884,7 +921,8 @@ document.addEventListener("click",function(ev){
     else{var nb=$("sheet").querySelector('[data-act="'+act+'"][data-v="'+v+'"]');if(nb)nb.focus();}
     return;
   }
-  if(act==="backup"){openSheet({mode:"edit",kind:"backup",draft:blankDraft()},b);return;}
+  if(act==="backup"){if(sheet){sheet={mode:"edit",kind:"backup",draft:blankDraft()};renderSheet();$("sheet").scrollTop=0;$("sheet").focus();}else openSheet({mode:"edit",kind:"backup",draft:blankDraft()},b);return;}
+  if(act==="badge-on"){try{Notification.requestPermission().then(function(){badgeLast=-1;render();if(sheet)renderSheet();});}catch(e){}return;}
   if(act==="export"&&sheet){
     var blob=new Blob([JSON.stringify({app:"closer",version:1,exported:new Date().toISOString(),items:Array.from(state.items.entries())},null,1)],{type:"application/json"});
     var link=document.createElement("a");link.href=URL.createObjectURL(blob);link.download="closer-sauvegarde-"+t+".json";
@@ -927,6 +965,7 @@ document.addEventListener("click",function(ev){
   else if(act==="daily"){
     if(d.lastDone===t){d.lastDone=d.prevDone||"";d.streak=d.prevStreak||0;}
     else{d.prevDone=d.lastDone||"";d.prevStreak=d.streak||0;d.streak=(d.lastDone===shift(t,-1)?(d.streak||0):0)+1;d.lastDone=t;}
+    var hd=histOf(d).filter(function(x){return x!==t||d.lastDone===t;});if(d.lastDone===t&&hd.indexOf(t)<0)hd.push(t);d.dones=hd.sort().slice(-120);
     save(id,d);
   }
   else if(act==="step"){if(d.steps&&d.steps[i]){d.steps[i].done=!d.steps[i].done;save(id,d);}}
@@ -984,7 +1023,7 @@ document.addEventListener("focusout",function(ev){
 
 /* ---------- démarrage ---------- */
 function localMode(note){
-  state.mode="local";col=null;
+  state.mode="local";
   try{var raw=localStorage.getItem(LS_KEY);if(raw)state.items=new Map(JSON.parse(raw));}catch(e){}
   state.note=note||"";
   render();
@@ -992,7 +1031,7 @@ function localMode(note){
 }
 
 /* ---------- version, mises à jour ---------- */
-var APPV="2026-11-17.1";
+var APPV="2026-11-17.2";
 /* 4. bouton + : se range au défilement vers le bas */
 (function(){var y=window.scrollY,f=document.getElementById("fab");
   addEventListener("scroll",function(){var n=window.scrollY,d=n-y;
@@ -1046,48 +1085,76 @@ function acStart(){
 }
 function schedSync(ms){if(!SB||!SU||state.mode!=="local")return;clearTimeout(syncTimer);syncTimer=setTimeout(function(){syncTimer=null;syncNow();},ms);}
 function storeLocal(){try{localStorage.setItem(LS_KEY,JSON.stringify(Array.from(state.items.entries())));}catch(e){}}
+var syncErr="", syncFails=0;
+function isAuthErr(e){var m=String((e&&(e.message||e.msg||e.code))||"");return (e&&(e.status===401||e.code==="PGRST301"||e.code==="PGRST303"))||/jwt|expired|token|unauthor/i.test(m);}
+function errText(e){
+  if(!navigator.onLine)return "pas de connexion internet";
+  var m=String((e&&(e.message||e.msg))||e||"");
+  if(/fetch|network|load failed/i.test(m))return "le serveur n'a pas répondu";
+  if(isAuthErr(e))return "session expirée";
+  return (e&&e.code?e.code+" · ":"")+m.slice(0,120);
+}
+async function freshSession(force){
+  // remet la session à jour avant d'envoyer (Mac sorti de veille, onglet resté ouvert la nuit…)
+  var r=force?await SB.auth.refreshSession():await SB.auth.getSession();
+  var s=r&&r.data&&r.data.session;
+  if(!s){if(force)throw {status:401,message:"session expirée"};return;}
+  if(!force&&s.expires_at&&s.expires_at*1000-Date.now()<60000){return freshSession(true);}
+  SU=s.user;
+}
+async function syncOnce(){
+  if(SY.uid!==SU.id)SY={uid:SU.id,last:0,h:{}};
+  if(!SY.h)SY.h={};
+  /* 1. récupérer ce qui a changé ailleurs */
+  var since=Math.max(0,(SY.last||0)-5000), from=0, changed=false, maxSeen=SY.last||0;
+  for(;;){
+    var r=await SB.from("closer_items").select("id,data,deleted,updated_at").gt("updated_at",since).order("updated_at",{ascending:true}).range(from,from+499);
+    if(r.error)throw r.error;
+    var rows=r.data||[];
+    rows.forEach(function(x){
+      var cur=state.items.get(x.id), ch=cur?hOf(cur):"x", known=SY.h[x.id];
+      var localEdit=known===undefined?!!cur:ch!==known, rh=x.deleted?"x":hOf(x.data);
+      if(!(localEdit&&rh!==ch)){
+        if(x.deleted){if(cur){state.items.delete(x.id);changed=true;}}
+        else if(rh!==ch){state.items.set(x.id,x.data);changed=true;}
+        SY.h[x.id]=rh;
+      }
+      if(x.updated_at>maxSeen)maxSeen=x.updated_at;
+    });
+    if(rows.length<500)break;from+=500;
+  }
+  SY.last=maxSeen;
+  if(changed){storeLocal();render();if(sheet&&sheet.kind!=="account")renderSheet();}
+  /* 2. envoyer ce qui a changé ici */
+  var up=[];
+  state.items.forEach(function(d,id){var hh=hOf(d);if(SY.h[id]!==hh)up.push({o:{user_id:SU.id,id:id,data:d,deleted:false},h:hh});});
+  Object.keys(SY.h).forEach(function(id){if(SY.h[id]!=="x"&&!state.items.has(id))up.push({o:{user_id:SU.id,id:id,data:null,deleted:true},h:"x"});});
+  for(var i=0;i<up.length;i+=200){
+    var part=up.slice(i,i+200);
+    var w=await SB.from("closer_items").upsert(part.map(function(u){return u.o;}));
+    if(w.error)throw w.error;
+    part.forEach(function(u){SY.h[u.o.id]=u.h;});
+  }
+  sySave();
+}
 async function syncNow(){
   if(!SB||!SU||state.mode!=="local")return;
   if(syncing){syncAgain=true;return;}
   syncing=true;cst=3;acRefresh();
   try{
-    if(SY.uid!==SU.id)SY={uid:SU.id,last:0,h:{}};
-    if(!SY.h)SY.h={};
-    /* 1. récupérer ce qui a changé ailleurs */
-    var since=Math.max(0,(SY.last||0)-5000), from=0, changed=false, maxSeen=SY.last||0;
-    for(;;){
-      var r=await SB.from("closer_items").select("id,data,deleted,updated_at").gt("updated_at",since).order("updated_at",{ascending:true}).range(from,from+499);
-      if(r.error)throw r.error;
-      var rows=r.data||[];
-      rows.forEach(function(x){
-        var cur=state.items.get(x.id), ch=cur?hOf(cur):"x", known=SY.h[x.id];
-        var localEdit=known===undefined?!!cur:ch!==known, rh=x.deleted?"x":hOf(x.data);
-        if(!(localEdit&&rh!==ch)){
-          if(x.deleted){if(cur){state.items.delete(x.id);changed=true;}}
-          else if(rh!==ch){state.items.set(x.id,x.data);changed=true;}
-          SY.h[x.id]=rh;
-        }
-        if(x.updated_at>maxSeen)maxSeen=x.updated_at;
-      });
-      if(rows.length<500)break;from+=500;
-    }
-    SY.last=maxSeen;
-    if(changed){storeLocal();render();if(sheet&&sheet.kind!=="account")renderSheet();}
-    /* 2. envoyer ce qui a changé ici */
-    var up=[];
-    state.items.forEach(function(d,id){var hh=hOf(d);if(SY.h[id]!==hh)up.push({o:{user_id:SU.id,id:id,data:d,deleted:false},h:hh});});
-    Object.keys(SY.h).forEach(function(id){if(SY.h[id]!=="x"&&!state.items.has(id))up.push({o:{user_id:SU.id,id:id,data:null,deleted:true},h:"x"});});
-    for(var i=0;i<up.length;i+=200){
-      var part=up.slice(i,i+200);
-      var w=await SB.from("closer_items").upsert(part.map(function(u){return u.o;}));
-      if(w.error)throw w.error;
-      part.forEach(function(u){SY.h[u.o.id]=u.h;});
-    }
-    sySave();cst=1;lastOk=Date.now();
-  }catch(e){cst=2;}
+    try{await freshSession(false);}catch(e){}
+    try{await syncOnce();}
+    catch(e){if(!isAuthErr(e))throw e;await freshSession(true);await syncOnce();}
+    cst=1;lastOk=Date.now();syncErr="";syncFails=0;
+  }catch(e){
+    cst=2;syncErr=errText(e);syncFails++;
+    try{console.warn("Closer : synchronisation en échec",e);}catch(x){}
+  }
   syncing=false;acRefresh();
   if(syncAgain){syncAgain=false;schedSync(300);}
+  else if(cst===2&&!document.hidden)schedSync(Math.min(60000,5000*Math.pow(2,syncFails-1)));
 }
+addEventListener("online",function(){schedSync(500);});
 document.addEventListener("visibilitychange",function(){if(document.hidden){if(syncTimer){clearTimeout(syncTimer);syncTimer=null;syncNow();}}else schedSync(0);});
 setInterval(function(){if(!document.hidden)schedSync(0);},60000);
 
@@ -1113,13 +1180,14 @@ function pwField(ac,ph,neu){
 function emField(){return '<div class="field"><label for="ac-em">E-mail</label><input type="email" id="ac-em" inputmode="email" autocomplete="email" autocapitalize="none" value="'+esc(AS.email||"")+'" placeholder="ton@adresse.fr"></div>';}
 function hm(t){return new Date(t).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});}
 function acHTML(){
-  var h='<div class="sh-head"><button type="button" class="btn ghost small" data-act="close-sheet">Fermer</button><h2 id="sh-h">Compte</h2><span style="width:78px"></span></div>';
-  if(!SB){h+='<div class="acbox">'+(sbTried?"Compte indisponible pour le moment (pas de connexion internet ?). Tes données restent sur cet appareil.":"Chargement…")+'</div>';}
+  var h='<div class="sh-head"><button type="button" class="btn ghost small" data-act="close-sheet">Fermer</button><h2 id="sh-h">'+(acOn()?"Compte":"Mes données")+'</h2><span style="width:78px"></span></div>';
+  if(!acOn()){}
+  else if(!SB){h+='<div class="acbox">'+(sbTried?"Compte indisponible pour le moment (pas de connexion internet ?). Tes données restent sur cet appareil.":"Chargement…")+'</div>';}
   else if(SU&&AS.step==="newpw"){
     h+='<div class="hint" style="margin-top:0">Choisis ton nouveau mot de passe.</div>'+pwField("new-password","Nouveau mot de passe",1)+
       '<div class="stack"><button type="submit" class="btn">Enregistrer le mot de passe</button><button type="button" class="btn ghost" data-act="ac-back">Annuler</button></div>';
   }else if(SU){
-    var st=cst===1?"✓ Synchronisé"+(lastOk?" à "+hm(lastOk):""):cst===3?"Synchronisation…":cst===2?"Synchronisation en échec : nouvel essai automatique.":"";
+    var st=cst===1?"✓ Synchronisé"+(lastOk?" à "+hm(lastOk):""):cst===3?"Synchronisation…":cst===2?(syncErr==="session expirée"?"Session expirée : déconnecte-toi puis reconnecte-toi.":"Synchronisation en échec ("+esc(syncErr||"erreur inconnue")+") : nouvel essai automatique."):"";
     h+='<div class="acbox">Connecté : <b>'+esc(SU.email||"")+'</b><br><span style="color:var(--muted)">'+st+'</span></div>'+
       '<div class="hint" style="margin-top:0">Tes éléments sont enregistrés sur ton compte et sur cet appareil. Connecte-toi sur un autre appareil pour les y retrouver.</div>'+
       '<div class="stack"><button type="button" class="btn" data-act="ac-sync">Synchroniser maintenant</button><button type="button" class="btn ghost" data-act="ac-chpw">Changer de mot de passe</button><button type="button" class="btn ghost" data-act="ac-out">Se déconnecter</button></div>'+
@@ -1133,6 +1201,13 @@ function acHTML(){
   }
   if(AS.msg)h+='<div class="acbox" role="status">'+esc(AS.msg)+'</div>';
   if(AS.unconf&&!SU)h+='<div><button type="button" class="btn ghost small" data-act="ac-resend">Renvoyer l\'e-mail de confirmation</button></div>';
+  var perm=("Notification" in window)?Notification.permission:"";
+  h+='<div class="field" style="margin-top:8px"><span class="lab">Mes données</span></div><div class="stack">'+
+    '<button type="button" class="btn ghost" data-act="backup">Exporter ou importer une sauvegarde</button>'+
+    (badgeOk()&&perm&&perm!=="granted"&&perm!=="denied"?'<button type="button" class="btn ghost" data-act="badge-on">Afficher le nombre restant sur l\'icône</button>':"")+'</div>'+
+    (badgeOk()&&perm==="granted"?'<div class="hint" style="margin-top:0">Pastille sur l\'icône : activée.</div>':"")+
+    (badgeOk()&&perm&&perm!=="granted"&&perm!=="denied"?'<div class="hint" style="margin-top:0">Sur iPhone, la pastille marche quand Closer est ajouté à l\'écran d\'accueil.</div>':"");
+  if(!acOn())return h+'<div class="hint" style="text-align:center">Version '+APPV+'</div>';
   h+='<div class="field" style="margin-top:8px"><span class="lab">À propos</span></div><div class="stack">'+
     (CONTACT?'<button type="button" class="btn ghost" data-act="ac-avis">Donner mon avis</button>':"")+
     '<button type="button" class="btn ghost" data-act="ac-stats">Statistiques anonymes : '+(statsOff()?"désactivées":"activées")+'</button>'+
@@ -1145,7 +1220,7 @@ function acRefresh(){
   var dot=$("ac-dot");if(dot)dot.className="acdot"+(SU&&cst===1?" ok":SU&&cst===2?" err":"");
   if(sheet&&sheet.kind==="account"){var a=document.activeElement;if(!(a&&(a.id==="ac-em"||a.id==="ac-pw")))renderSheet();}
 }
-function acOpen(b){if(sheet&&sheet.kind==="account"){renderSheet();return;}if(sheet)closeSheet();acq=false;openSheet({mode:"edit",kind:"account",draft:{}},b||$("ac-btn"));}
+function acOpen(b){if(sheet&&sheet.kind==="account"){renderSheet();return;}acq=false;if(sheet){sheet={mode:"edit",kind:"account",draft:{}};renderSheet();$("sheet").scrollTop=0;$("sheet").focus();return;}openSheet({mode:"edit",kind:"account",draft:{}},b||$("ac-btn"));}
 function acVals(){var e=$("ac-em"),p=$("ac-pw");if(e)AS.email=e.value.trim();return {em:AS.email,pw:p?p.value:""};}
 function okEm(x){return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(x);}
 function redir(){return location.origin+location.pathname;}
@@ -1263,27 +1338,7 @@ function statDay(ev){stat1Day(ev);}
 route();render();
 if(navigator.storage&&navigator.storage.persist){navigator.storage.persist().catch(function(){});}
 if("serviceWorker" in navigator&&location.protocol==="https:"){navigator.serviceWorker.register("sw.js").catch(function(){});}
-(async function(){
-  var db=null;
-  try{db=(window.claude&&window.claude.use)?await window.claude.use("db"):null;}catch(e){db=null;}
-  if(!db){localMode();return;}
-  try{col=db.collection("items");}catch(e){localMode();return;}
-  var timer=setTimeout(function(){
-    state.note="Connexion lente : tes données peuvent ne pas être à jour.";
-    if(state.mode==="loading")state.mode="cloud";render();
-  },10000);
-  col.onSnapshot(function(snap){
-    var m=new Map();snap.docs.forEach(function(doc){var d=doc.data();if(d)m.set(doc.id,d);});
-    Object.keys(dirty).forEach(function(id){if(m.has(id))m.set(id,dirty[id]);else{clearTimeout(noteTimers[id]);delete dirty[id];}});
-    state.items=m;state.mode="cloud";
-    if(!snap.metadata||!snap.metadata.fromCache){clearTimeout(timer);state.note="";}
-    render();
-  },function(){
-    clearTimeout(timer);
-    if(state.mode==="loading"){localMode("Synchronisation indisponible : tes données restent sur cet appareil pour cette visite.");}
-    else{state.note="Synchronisation interrompue. Recharge la page pour reprendre.";render();}
-  });
-})();
+localMode();
 })();
 </script>
 </body>

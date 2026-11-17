@@ -23,6 +23,7 @@ export function createClient(){
     async signInWithPassword(a){const r=await call('login',a);if(r.error)return r;const s={user:r.user};localStorage.setItem('mock-sess',JSON.stringify(s));setTimeout(()=>cbs.forEach(f=>f('SIGNED_IN',s)));return {error:null};},
     async signUp(a){return call('signup',a);},
     async signOut(){localStorage.removeItem('mock-sess');cbs.forEach(f=>f('SIGNED_OUT',null));return {error:null};},
+    async refreshSession(){window.__refreshed=(window.__refreshed||0)+1;return {data:{session:JSON.parse(localStorage.getItem('mock-sess')||'null')}};},
     async resetPasswordForEmail(){return {error:null};}, async resend(){return {error:null};}, async updateUser(){return {error:null};}
   };
   function from(){const q={};const b={select(){return b;},gt(c,v){q.gt=v;return b;},order(){return b;},
@@ -32,6 +33,7 @@ export function createClient(){
 }
 """
 USERS, ROWS, EVENTS = {}, {}, []
+FAIL = {'jwt': 0}
 CLOCK = itertools.count(1_700_000_000_000, 1000)
 
 def srv(op, raw):
@@ -51,6 +53,9 @@ def srv(op, raw):
         z0, z1 = a['range']
         return json.dumps({'data': rows[z0:z1 + 1], 'error': None})
     if op == 'upsert':
+        if FAIL['jwt'] > 0:
+            FAIL['jwt'] -= 1
+            return json.dumps({'error': {'code': 'PGRST301', 'message': 'JWT expired'}})
         for r in a['rows']:
             assert r['user_id'] == a['uid'], 'écriture pour un autre utilisateur'
             ROWS[(a['uid'], r['id'])] = {'id': r['id'], 'data': r['data'], 'deleted': r['deleted'], 'updated_at': next(CLOCK)}
@@ -123,7 +128,9 @@ with sync_playwright() as p:
     add_task(pg, 'Tâche locale')
     pg.reload(); pg.wait_for_timeout(500)
     check('sans compte : la tâche reste après rechargement', items(pg) == ['Tâche locale'])
-    check('sans réglage : bouton Compte masqué', pg.is_hidden('#ac-btn'))
+    pg.click('#ac-btn'); pg.wait_for_timeout(450)
+    check('sans réglage : le bouton du haut ouvre « Mes données » avec la sauvegarde', pg.is_visible('#sheet [data-act="backup"]') and 'Mes données' in pg.inner_text('#sh-h'))
+    pg.click('#sheet [data-act="close-sheet"]'); pg.wait_for_timeout(450)
     check('sans réglage : aucune erreur', not errs)
     c.close()
 
@@ -179,6 +186,20 @@ with sync_playwright() as p:
     pa.evaluate("localStorage.removeItem('closer-ev-open-day')"); pa.reload(); pa.wait_for_timeout(800)
     check('plus aucun envoi une fois désactivé', len(EVENTS) == n0)
 
+    # 6 ter. Jeton expiré (Mac sorti de veille) : la synchro rafraîchit la session et réessaie seule
+    pa.keyboard.press('Escape'); pa.wait_for_timeout(400)
+    FAIL['jwt'] = 1; add_task(pa, 'Après la veille')
+    open_account(pa); pa.click('#sheet [data-act="ac-sync"]'); pa.wait_for_timeout(1200)
+    check('jeton expiré : session rafraîchie puis envoi réussi', FAIL['jwt'] == 0 and pa.evaluate("window.__refreshed>0") and any(r['data'] and r['data'].get('title') == 'Après la veille' for r in ROWS.values()))
+
+    # 6 bis. Compte › Sauvegarde, connecté : le texte parle de la synchro ; « Retour » revient au compte
+    pa.keyboard.press('Escape'); pa.wait_for_timeout(400)
+    open_account(pa); pa.click('#sheet [data-act="backup"]'); pa.wait_for_timeout(250)
+    check('Compte › Sauvegarde : texte adapté au compte connecté', 'synchronisés sur ton compte' in pa.inner_text('#sheet'))
+    pa.click('#sheet [data-act="ac-open"]'); pa.wait_for_timeout(250)
+    check('« Retour » ramène à la fiche Compte', pa.is_visible('#sheet [data-act="ac-sync"]'))
+    pa.keyboard.press('Escape'); pa.wait_for_timeout(400)
+
     # 7. Suppression du compte
     open_account(pa); pa.click('[data-act="ac-del"]'); pa.wait_for_timeout(150); pa.click('[data-act="ac-del"]'); pa.wait_for_timeout(600)
     check('compte supprimé, données en ligne effacées', not ROWS and 'Compte supprimé' in pa.inner_text('#sheet'))
@@ -194,7 +215,9 @@ with sync_playwright() as p:
             cdp.send('Input.dispatchTouchEvent', {'type': 'touchMove', 'touchPoints': [{'x': 200, 'y': y_from + (y_to - y_from) * i / steps}]})
         cdp.send('Input.dispatchTouchEvent', {'type': 'touchEnd', 'touchPoints': []})
         pg.wait_for_timeout(450)
-    pg.click('[data-act="backup"]'); pg.wait_for_timeout(450)
+    pg.click('#ac-btn'); pg.wait_for_timeout(450)
+    pg.click('#sheet [data-act="backup"]'); pg.wait_for_timeout(300)
+    check('Mes données › Sauvegarde : texte « sans compte »', 'cet appareil uniquement' in pg.inner_text('#sheet'))
     top = pg.evaluate("document.getElementById('sheet').getBoundingClientRect().top")
     swipe(top + 20, top + 60, 10, 40)
     check('petit glissement lent : la fiche reste ouverte', pg.evaluate("document.body.classList.contains('sheet-open')"))

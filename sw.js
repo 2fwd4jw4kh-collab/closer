@@ -1,7 +1,7 @@
 // Closer : hors ligne. Réseau d'abord, sans cache HTTP (pour recevoir tout de suite les mises à jour), cache en secours.
 // À chaque mise en ligne : changer CACHE ici et APPV dans index.html.
-const CACHE = "closer-v6";
-const FILES = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png"];
+const CACHE = "closer-v7";
+const FILES = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png", "fonts/schibsted-grotesk.woff2"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES)).then(() => self.skipWaiting()));
