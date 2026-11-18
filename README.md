@@ -4,7 +4,7 @@ Une application web personnelle pour organiser ses journées : agenda sur 7 jour
 
 Elle fonctionne **sans compte** (données dans le navigateur de l'appareil) ou **avec un compte facultatif** pour retrouver ses éléments sur tous ses appareils.
 
-**Application :** https://2fwd4jw4kh-collab.github.io/closer/
+**Application :** https://maxencegayet.github.io/closer/
 
 ## Pourquoi ce projet
 
